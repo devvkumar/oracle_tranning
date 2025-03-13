@@ -1,0 +1,172 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<dataTemplate name="XXQGEN_INV_RPT_FMT"  version="1.0">
+<properties>
+<property name="xml_tag_case" value="upper"/>
+<property name="debug_mode" value="on" />
+</properties>
+<parameters>
+ </parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[
+SELECT PHA.SEGMENT1  PO_NUMBER,
+       PHA.PO_HEADER_ID HDR_ID,
+       PHA.CREATION_DATE  ORDER_DATE,
+       PHA.REVISION_NUM  REVISION_NUMBER,
+       PHA.LAST_UPDATE_DATE  REVISION_DATE,
+       PAPF.FULL_NAME  CREATED_BY,
+       PAPF2.FULL_NAME  REVISED_BY,
+       PHA.NOTE_TO_VENDOR  PO_NOTES,
+       APS.SEGMENT1  VENDOR_NUMBER,
+       APS.VENDOR_NAME  VENDOR_LOC,
+        ASSA.ADDRESS_LINE1 || ASSA.ADDRESS_LINE2|| ASSA.ADDRESS_LINE3 VENOR_ROAD,
+       APC.FIRST_NAME || ' ' || APC.LAST_NAME  VENDOR_CONTACT,
+        ASSA.CITY|| ', '|| ASSA.STATE|| ' ' || ASSA.ZIP VENDOR_CODE,
+       APC.PHONE  VENDOR_CONTACT_PHONE,
+       APT.NAME  PAYMENT_TERMS,
+       PLC_FC.DISPLAYED_FIELD  FREIGHT_TERMS,
+       PHA.FOB_LOOKUP_CODE  FOB,
+       PHA.SHIP_VIA_LOOKUP_CODE  SHIP_VIA,
+      NULL  RECEIVING_CONTACT ,
+       HLA.DESCRIPTION SHIP_LOC,
+      HLA.ADDRESS_LINE_1 SHIP_ROAD,
+      HLA.TOWN_OR_CITY || ', ' || HLA.COUNTRY || ' ' || HLA.POSTAL_CODE SHIP_CODE,
+      HLA2.DESCRIPTION BILL_LOC,
+      HLA2.ADDRESS_LINE_1 BILL_ROAD,
+      HLA2.TOWN_OR_CITY || ', ' || HLA2.COUNTRY || ' ' || HLA2.POSTAL_CODE BILL_CODE,
+       RSL.DELIVER_TO_PERSON_ID,
+       RSH.CUSTOMER_ID,
+       RSH.EMPLOYEE_ID
+ FROM PO_HEADERS_ALL PHA,
+       FND_USER FU1,
+       FND_USER FU2,
+       AP_SUPPLIERS APS,
+       AP_SUPPLIER_SITES_ALL ASSA,
+       AP_TERMS APT,
+       AP_SUPPLIER_CONTACTS APC,
+       PO_LOOKUP_CODES PLC_FC,
+       HR_LOCATIONS_ALL HLA,
+       HR_LOCATIONS_ALL HLA2,
+       RCV_SHIPMENT_HEADERS RSH,
+       RCV_SHIPMENT_LINES RSL,
+       PO_HEADERS_ARCHIVE_ALL PHAA,
+       PER_ALL_PEOPLE_F PAPF2,
+       PER_ALL_PEOPLE_F PAPF
+ WHERE 1=1
+	   AND PHA.CREATED_BY = FU1.USER_ID
+       AND PAPF.PERSON_ID = FU1.EMPLOYEE_ID
+       AND PHA.LAST_UPDATED_BY = FU2.USER_ID
+       AND PHA.VENDOR_ID = APS.VENDOR_ID
+       AND PHA.VENDOR_SITE_ID = ASSA.VENDOR_SITE_ID
+       AND ASSA.TERMS_ID = APT.TERM_ID
+       AND PHA.VENDOR_CONTACT_ID = APC.VENDOR_CONTACT_ID
+       AND PHA.SHIP_TO_LOCATION_ID = HLA.LOCATION_ID
+       AND PHA.BILL_TO_LOCATION_ID = HLA2.LOCATION_ID
+       AND PHA.FREIGHT_TERMS_LOOKUP_CODE = PLC_FC.LOOKUP_CODE
+       AND RSL.PO_HEADER_ID = PHA.PO_HEADER_ID
+       AND RSL.SHIPMENT_HEADER_ID = RSH.SHIPMENT_HEADER_ID
+       AND PHA.PO_HEADER_ID = PHAA.PO_HEADER_ID
+       AND PHA.REVISION_NUM = PHAA.REVISION_NUM
+        AND SYSDATE BETWEEN PAPF.EFFECTIVE_START_DATE
+                       AND NVL (PAPF.EFFECTIVE_END_DATE, TRUNC (SYSDATE) + 1)
+       AND (PAPF.CURRENT_EMPLOYEE_FLAG = 'Y' OR PAPF.CURRENT_NPW_FLAG = 'Y')
+        AND SYSDATE BETWEEN PAPF2.EFFECTIVE_START_DATE
+                       AND NVL (PAPF2.EFFECTIVE_END_DATE, TRUNC (SYSDATE) + 1)
+       AND (PAPF2.CURRENT_EMPLOYEE_FLAG = 'Y' OR PAPF2.CURRENT_NPW_FLAG = 'Y')
+       AND PHAA.AGENT_ID = PAPF2.PERSON_ID
+       AND  PLC_FC.LOOKUP_TYPE = 'FREIGHT TERMS'
+       --AND PHA.ORG_ID = 204
+       AND PHA.SEGMENT1 = '3062'
+]]>
+</sqlStatement>
+<sqlStatement name="Q_MAIN2">
+<![CDATA[
+SELECT PLA.PO_LINE_ID,
+            PLA.PO_HEADER_ID,
+            PLA.LINE_TYPE_ID,
+            PLA.LINE_NUM,
+            MSIB.SEGMENT1 PART_NUM,
+            MSIB.DESCRIPTION PART_DESC,
+            PLA.UNIT_MEAS_LOOKUP_CODE,
+            PLA.ITEM_ID,
+            PLA.CATEGORY_ID,
+            PLA.ITEM_DESCRIPTION,
+            PLA.UNIT_PRICE,
+            PLA.QUANTITY,
+            PLA.UNIT_PRICE * PLA.QUANTITY AMOUNT,
+            RSH.SHIPPED_DATE
+FROM 
+            PO_LINES_ALL PLA,
+            PO_HEADERS_ALL PHA,
+            MTL_SYSTEM_ITEMS_B MSIB,
+            MTL_CATEGORIES MC,
+            PO_LINE_TYPES MLT,
+            ORG_ORGANIZATION_DEFINITIONS OOD,
+            PO_LINE_LOCATIONS_ALL PLLA,
+            RCV_SHIPMENT_HEADERS RSH,
+             RCV_SHIPMENT_LINES RSL
+WHERE 1=1
+    AND PLA.PO_HEADER_ID = PHA.PO_HEADER_ID
+    AND MSIB.INVENTORY_ITEM_ID = PLA.ITEM_ID
+    AND MC.CATEGORY_ID = PLA.CATEGORY_ID
+    AND MLT.LINE_TYPE_ID = PLA.LINE_TYPE_ID
+    AND OOD.ORGANIZATION_ID = MSIB.ORGANIZATION_ID
+    AND PLLA.PO_LINE_ID = PLA.PO_LINE_ID
+    AND PLLA.SHIP_TO_ORGANIZATION_ID = MSIB.ORGANIZATION_ID
+    AND OOD.ORGANIZATION_ID = MSIB.ORGANIZATION_ID
+    AND RSL.PO_HEADER_ID = PHA.PO_HEADER_ID
+    AND RSL.SHIPMENT_HEADER_ID = RSH.SHIPMENT_HEADER_ID
+    AND PHA.PO_HEADER_ID = :HDR_ID
+ ]]>
+</sqlStatement>
+<sqlStatement name="Q_MAIN3">
+<![CDATA[
+select 'PO_Invoice_Details' WM
+from dual
+ ]]>
+</sqlStatement>
+</dataQuery>
+	
+	<dataStructure>
+		<group name="G_MAIN3" dataType="varchar2" source="Q_MAIN3">
+			<element name="WATERMARK" dataType="NUMBER" value="WM"/>
+		</group>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+			<element name="PO_NUMBER" dataType="NUMBER" value="PO_NUMBER"/>
+			<element name="ORDER_DATE" dataType="NUMBER" value="ORDER_DATE"/>
+			<element name="REVISION_NUMBER" dataType="NUMBER" value="REVISION_NUMBER"/>
+			<element name="CREATED_BY" dataType="NUMBER" value="CREATED_BY"/>
+			<element name="REVISED_BY" dataType="NUMBER" value="REVISED_BY"/>
+			<element name="REVISION_DATE" dataType="NUMBER" value="REVISION_DATE"/>
+			<element name="VENDOR_NUMBER" dataType="NUMBER" value="VENDOR_NUMBER"/>
+			<element name="VENDOR_LOC" dataType="NUMBER" value="VENDOR_LOC"/>
+			<element name="VENDOR_ROAD" dataType="NUMBER" value="VENDOR_ROAD"/>
+			<element name="VENDOR_CODE" dataType="NUMBER" value="VENDOR_CODE"/>
+			<element name="PAYMENT_TERMS" dataType="varchar2" value="PAYMENT_TERMS"/>
+			<element name="FREIGHT_TERMS" dataType="varchar2" value="FREIGHT_TERMS"/>
+			<element name="FOB" dataType="varchar2" value="FOB"/>
+			<element name="SHIP_VIA" dataType="NUMBER" value="SHIP_VIA"/>
+			<element name="VENDOR_CONTACT" dataType="NUMBER" value="VENDOR_CONTACT"/>
+			<element name="RECEIVING_CONTACT" dataType="NUMBER" value="RECEIVING_CONTACT"/>
+			<element name="PO_NOTES" dataType="NUMBER" value="PO_NOTES"/>
+			<element name="SHIP_LOC" dataType="NUMBER" value="SHIP_LOC"/>
+			<element name="SHIP_ROAD" dataType="NUMBER" value="SHIP_ROAD"/>
+			<element name="SHIP_CODE" dataType="NUMBER" value="SHIP_CODE"/>
+			<element name="BILL_LOC" dataType="NUMBER" value="BILL_LOC"/>
+			<element name="BILL_ROAD" dataType="NUMBER" value="BILL_ROAD"/>
+			<element name="BILL_CODE" dataType="NUMBER" value="BILL_CODE"/>
+			<group name="G_MAIN2" dataType="varchar2" source="Q_MAIN2">
+				<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+				<element name="PART_NUM" dataType="varchar2" value="PART_NUM"/>
+				<element name="PART_DESC" dataType="varchar2" value="PART_DESC"/>
+				<element name="UOM" dataType="varchar2" value="UOM"/>
+				<element name="DELIVERY_DATE" dataType="varchar2" value="DELIVERY_DATE"/>
+				<element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+				<element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+				<element name="AMOUNT" dataType="varchar2" value="AMOUNT"/>
+			</group>
+			<element name="SUM_AMOUNT" function="sum" dataType="number" value="AMOUNT"/>
+		</group>
+		<element name="GRAND_AMOUNT" function="sum" dataType="number" value="SUM_AMOUNT"/>
+	</dataStructure>
+</dataTemplate>

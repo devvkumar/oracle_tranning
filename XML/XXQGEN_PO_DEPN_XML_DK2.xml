@@ -1,0 +1,98 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_PO_DEPN_XML_DK" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+<parameter name="P_HEADER_ID" dataType="CHARACTER"/>
+<parameter name="P_ORG_ID" dataType="CHARACTER"/>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+
+<![CDATA[ 
+	SELECT PRHA.REQUISITION_HEADER_ID "HEADER_ID", 
+		   PDTAV.TYPE_NAME "TYPE", 
+		   HOU.NAME "Org Name", 
+		   PRHA.SEGMENT1 "NUMBER", 
+		   PAPF.FULL_NAME "REQUESER" 
+	FROM   PO_REQUISITION_HEADERS_ALL PRHA, 
+		   PER_ALL_PEOPLE_F PAPF, 
+		   FND_USER FU, 
+		   FND_USER FU2, 
+		   PO_DOCUMENT_TYPES_ALL_VL PDTAV, 
+		   PO_LOOKUP_CODES PLC, 
+		   HR_OPERATING_UNITS HOU 
+	WHERE  PRHA.PREPARER_ID = PAPF.PERSON_ID 
+	AND    PRHA.LAST_UPDATED_BY = FU.USER_ID 
+	AND    FU2.USER_ID = PRHA.CREATED_BY 
+	AND    PDTAV.ORG_ID = PRHA.ORG_ID 
+	AND    PDTAV.DOCUMENT_SUBTYPE = PRHA.TYPE_LOOKUP_CODE 
+	AND    PDTAV.DOCUMENT_TYPE_CODE = 'REQUISITION' 
+	AND    PRHA.AUTHORIZATION_STATUS = PLC.LOOKUP_CODE 
+	AND    PLC.LOOKUP_TYPE = 'AUTHORIZATION STATUS' 
+	AND    HOU.ORGANIZATION_ID = PRHA.ORG_ID 
+	AND    (PRHA.REQUISITION_HEADER_ID = :P_HEADER_ID OR :P_HEADER_ID IS NULL) 
+	AND    ROWNUM<30 ]]>
+
+</sqlStatement>
+<sqlStatement name="Q_MAIN2">
+
+<![CDATA[ 
+		SELECT  PRLA.LINE_NUM, 
+				MSIB.SEGMENT1 "ITEM", 
+				PRLA.UNIT_PRICE "PRICE", 
+				PRLA.QUANTITY, 
+				PRLA.UNIT_PRICE* QUANTITY "AMOUNT", 
+				MSIB.DESCRIPTION "ITEM_DESCRIPTION", 
+				GCC.SEGMENT1 ||'-'|| GCC.SEGMENT2 || '-'|| GCC.SEGMENT3 ||'-' || GCC.SEGMENT4|| '-'||GCC.SEGMENT5 "CHARGE_ACCOUNT" 
+		FROM 	PO_REQUISITION_LINES_ALL PRLA, 
+				PO_REQUISITION_HEADERS_ALL PRHA, 
+				MTL_CATEGORIES MC, 
+				MTL_SYSTEM_ITEMS_B MSIB, 
+				HR_LOCATIONS HL, 
+				PO_LINE_TYPES PLT, 
+				GL_CODE_COMBINATIONS GCC, 
+				PO_REQ_DISTRIBUTIONS_ALL PRDA 
+		WHERE 	PRLA.REQUISITION_HEADER_ID = PRHA.REQUISITION_HEADER_ID 
+		AND 	PRLA.CATEGORY_ID = MC.CATEGORY_ID 
+		AND 	PRLA.ITEM_ID= MSIB.INVENTORY_ITEM_ID 
+		AND 	PRHA.ORG_ID = MSIB.ORGANIZATION_ID 
+		AND 	PRLA.DELIVER_TO_LOCATION_ID = HL.LOCATION_ID 
+		AND 	PRLA.LINE_TYPE_ID = PLT.LINE_TYPE_ID 
+		AND 	PRLA.REQUISITION_LINE_ID = PRDA.REQUISITION_LINE_ID 
+		AND 	(PRLA.REQUISITION_HEADER_ID= :P_HEADER_ID OR :P_HEADER_ID IS NULL ) 
+		AND 	ROWNUM <30 ]]>
+
+</sqlStatement>
+
+</dataQuery>
+	<dataTrigger name="afterReportTrigger" 
+				 source="XXQGEN_REQ_GRP_PAR_RPT_DK.afterreport"/>
+	<dataTrigger name="beforeReportTrigger" 
+				 source="XXQGEN_REQ_GRP_PAR_RPT_DK.beforereport"/>
+	<element name="user_name" dataType="number" 
+			 value="XXQGEN_REQ_GRP_PAR_RPT_DK.gc_user_name"/>
+	<element name="ORG_ID" dataType="number"
+			 value="XXQGEN_REQ_GRP_PAR_RPT_DK.gn_org_id"/>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">		
+			<element name="HEADER_ID" value="HEADER_ID" dataType="varchar2"/>
+			<element name="TYPE" value="TYPE" dataType="varchar2"/>
+			<element name="ORG_ID" value="ORG_ID" dataType="varchar2"/>
+			<element name="NUMBER" value="NUMBER" dataType="varchar2"/>
+			<element name="REQUESER" value="REQUESER" dataType="varchar2"/>
+			<group name="G_MAIN2" dataType="varchar2" source="Q_MAIN2">
+				<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>	
+				<element name="segment1" dataType="varchar2" value="segment1"/>	
+				<element name="item_description" dataType="varchar2" value="item_description"/>	
+				<element name="UNIT_PRICE" dataType="varchar2" value="PRICE"/>	
+				<element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>	
+				<element name="amount" dataType="varchar2" value="AMOUNT"/>	
+				<element name="CHARGE_ACCOUNT" dataType="varchar2" value="CHARGE_ACCOUNT"/>	
+				
+			</group>
+		</group>
+	</dataStructure>
+</dataTemplate>

@@ -1,0 +1,22 @@
+options (skip=1)
+load data
+infile PO_LINES_DATA_AR.csv
+append
+into table XXQGEN_PO_LINES_INTERFACE_AR
+fields terminated by ","
+OPTIONALLY ENCLOSED BY '"'
+TRAILING NULLCOLS
+(LINE_TYPE ":LINE_TYPE",
+ITEM ":ITEM",
+CATEGORY ":CATEGORY",
+ITEM_DESCRIPTION ":ITEM_DESCRIPTION",
+UNIT_OF_MEASURE ":UNIT_OF_MEASURE",
+QUANTITY ":QUANTITY",
+UNIT_PRICE ":UNIT_PRICE",
+NEED_BY_DATE ":NEED_BY_DATE",
+PROMISED_DATE ":PROMISED_DATE",
+STATUS ":STATUS",
+INTERFACE_HEADER_ID "int_hdr_id2_ar.nextval",
+INTERFACE_LINE_ID "int_line_id2_ar.nextval",
+RECORD_ID "line_rec_id2_ar.nextval",
+PO_HEADER_ID "po_hdr_id_ar.currval")
