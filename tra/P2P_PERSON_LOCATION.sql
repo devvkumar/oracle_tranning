@@ -1,0 +1,245 @@
+SELECT *
+FROM AP_SUPPLIERS APS;
+
+SELECT *
+FROM AP_SUPPLIER_SITES_ALL;
+
+
+SELECT APS.VENDOR_ID,
+            APS.VENDOR_NAME,
+            APS.LAST_UPDATED_BY,
+            APS.VENDOR_TYPE_LOOKUP_CODE,
+            LUB.USER_NAME LAST_UPDATED_BY_NAME,
+            APS.CREATED_BY,
+            CB.USER_NAME CREATED_BY_NAME,
+            PLC.DISPLAYED_FIELD VENDOR_LOOKUP_CODE,
+            APS.SHIP_VIA_LOOKUP_CODE,
+            APS.SHIP_TO_LOCATION_ID,
+            HL2.LOCATION_CODE SHIP_LOC,
+            APS.BILL_TO_LOCATION_ID,
+            HL1.LOCATION_CODE BILL_LOC,
+            APS.tca_sync_num_1099,
+            APS.TERMS_ID,
+            PLC2.DISPLAYED_FIELD ORG_LOOKUP_CODE,
+            APS.PAYMENT_METHOD_LOOKUP_CODE,
+            APS.HOLD_FLAG,
+            APS.PARTY_ID,
+            PLC3.DISPLAYED_FIELD PAY_GROUP_LOOKUP_CODE
+FROM AP_SUPPLIERS APS,
+         PO_LOOKUP_CODES PLC,
+         PO_LOOKUP_CODES PLC2,
+         PO_LOOKUP_CODES PLC3,
+         HR_LOCATIONS HL1,
+         HR_LOCATIONS HL2,
+         FND_USER CB,
+         FND_USER LUB
+WHERE 1=1
+    -- LOOKUPCODE FOR VENDOR_TYPE_CODE
+    AND PLC.LOOKUP_CODE = APS.VENDOR_TYPE_LOOKUP_CODE
+    -- LOOKUP CODE FOR ORGANIZATION_TYPE_LOOKUP_CODE
+    AND PLC2.LOOKUP_CODE = APS.ORGANIZATION_TYPE_LOOKUP_CODE
+    -- LOOKUP_CODE FOR PAY_GROUP_LOOKUP_CODE
+    AND PLC3.LOOKUP_CODE = APS.PAY_GROUP_LOOKUP_CODE
+    -- LOCATION FOR BILL LOCATION ID
+    AND HL1.LOCATION_ID = APS.BILL_TO_LOCATION_ID
+    -- LOCATION FOR SHIP LOCATION ID
+    AND HL2.LOCATION_ID = APS.SHIP_TO_LOCATION_ID
+    AND APS.LAST_UPDATED_BY = LUB.USER_ID
+    AND APS.CREATED_BY = CB.USER_ID
+    AND PLC.LOOKUP_TYPE = 'VENDOR TYPE'
+    AND PLC2.LOOKUP_TYPE = 'ORGANIZATION TYPE'
+    AND PLC3.LOOKUP_TYPE = 'PAY GROUP'
+    AND APS.VENDOR_ID = 21;
+    
+SELECT *
+FROM FND_TERRITORIES_VL
+WHERE TERRITORY_CODE = 'HR- Warsaw';
+
+SELECT LOOKUP_CODE, COUNT(*)
+FROM PO_LOOKUP_CODES
+GROUP BY LOOKUP_CODE
+HAVING COUNT(*)>2;
+
+
+SELECT *
+FROM PO_LOOKUP_CODES
+WHERE LOOKUP_CODE = 'SHIP';
+
+SELECT *
+FROM AP_SUPPLIER_SITES_ALL;
+
+
+vendor_type_lookup_code - ap_suppliers 
+ 
+SELECT plc.displayed_field
+
+         FROM PO_LOOKUP_CODES plc
+
+        WHERE plc.lookup_type = 'VENDOR TYPE'
+
+         AND plc.lookup_code = :vendor_type_lookup_code
+ 
+pay_group_lookup_code
+ 
+organization_type_lookup_code
+ 
+tca_sync_num_1099
+ 
+----- sites level - 
+ 
+vendor_site_code , vendor_site_id , org_id , org_name
+ 
+purchasing_site_flag
+ 
+pay_site_flag
+ 
+apss.address_line1
+
+      || ', '
+
+      || apss.address_line2
+
+      || ', '
+
+      || apss.city
+
+      || ', '
+
+      || apss.state
+ 
+      || ', '
+ 
+      || apss.country
+ 
+          site_address
+ 
+ship_to_location_id --> SELECT location_code
+ 
+         FROM hr_locations
+ 
+        WHERE location_id = :ship_to_location_id
+ 
+ship_to_location
+ 
+bill_to_location_id - SELECT location_code
+ 
+         FROM hr_locations
+ 
+        WHERE location_id = :bill_to_location_id
+ 
+bill_to_location
+ 
+SELECT territory_short_name
+FROM FND_TERRITORIES_VL 
+WHERE territory_code = :country
+ 
+
+SELECT ASSA.VENDOR_SITE_ID,
+            ASSA.LAST_UPDATED_BY,
+            ASSA.VENDOR_ID,
+            ASSA.VENDOR_SITE_CODE,
+            ASSA.CREATED_BY,
+            ASSA.PURCHASING_SITE_FLAG,
+            ASSA.PAY_SITE_FLAG,
+            ASSA.ADDRESS_LINE1,
+            ASSA.ADDRESS_LINE2,
+            ASSA.CITY,
+            ASSA.STATE,
+            ASSA.ZIP,
+            ASSA.PROVINCE,
+            FTV.territory_short_name,
+            ASSA.AREA_CODE,
+            ASSA.PHONE,
+            ASSA.SHIP_TO_LOCATION_ID,
+            ASSA.BILL_TO_LOCATION_ID,
+            ASSA.SHIP_VIA_LOOKUP_CODE,
+            ASSA.BANK_NUM,
+            ASSA.BANK_ACCOUNT_TYPE,
+            ASSA.PAY_GROUP_LOOKUP_CODE,
+            ASSA.TERMS_ID,
+            ASSA.ORG_ID,
+            ASSA.COUNTY,
+            ASSA.LANGUAGE,
+            ASSA.EMAIL_ADDRESS,
+            ASSA.LOCATION_ID,
+            ASSA.PARTY_SITE_ID
+FROM AP_SUPPLIER_SITES_ALL ASSA,
+         HR_LOCATIONS HL1,
+         HR_LOCATIONS HL2,
+         FND_TERRITORIES_VL FTV,
+         AP_SUPPLIER_CONTACTS ASCS,
+         HZ_ORG_CONTACTS HOC,
+         HZ_RELATIONSHIPS HR,
+         HZ_PARTIES HP,
+         HZ_CONTACT_POINTS HCP
+WHERE 1=1
+    AND HL1.LOCATION_ID = ASSA.SHIP_TO_LOCATION_ID
+    AND HL2.LOCATION_ID = ASSA.BILL_TO_LOCATION_ID
+    AND FTV.territory_code = ASSA.COUNTRY
+    AND ASSA.PARTY_SITE_ID = ASCS.ORG_PARTY_SITE_ID
+    AND ASCS.RELATIONSHIP_ID = HOC.PARTY_RELATIONSHIP_ID
+    AND ASCS.REL_PARTY_ID = HR.PARTY_ID
+    AND HP.PARTY_ID = HR.OBJECT_ID
+    AND HCP.OWNER_TABLE_ID = ASCS.REL_PARTY_ID
+    AND HR.RELATIONSHIP_CODE = 'CONTACT'
+    AND HR.SUBJECT_TABLE_NAME = 'HZ_PARTIES'
+    AND VENDOR_ID = 577;
+
+SELECT PARTY_SITE_ID, ASSA.*
+FROM AP_SUPPLIER_SITES_ALL ASSA
+WHERE VENDOR_SITE_ID = 1273;
+
+
+SELECT RELATIONSHIP_ID,ASCS.*
+FROM AP_SUPPLIER_CONTACTS ASCS
+WHERE ORG_PARTY_SITE_ID = 174747;
+
+--174782; OLD
+
+SELECT *
+FROM HZ_ORG_CONTACTS
+WHERE PARTY_RELATIONSHIP_ID = 118284;
+ 
+ --118316; OLD
+
+SELECT OBJECT_ID, PARTY_ID , HZR.*
+FROM HZ_RELATIONSHIPS HZR
+WHERE PARTY_ID = 302269;
+
+--RELATIONSHIP_ID = 118316 ;
+
+SELECT *
+FROM HZ_PARTIES HZP
+WHERE PARTY_ID = 302301; 
+
+-- OBJECT ID OF HZ_RELATIONSHIP;
+
+SELECT *
+FROM HZ_CONTACT_POINTS
+WHERE OWNER_TABLE_ID = 302269 ;
+
+
+
+--REVOURSE
+
+
+SELECT EXT_PAYEE_ID,IEPA.*
+FROM iby_external_payees_all IEPA
+WHERE SUPPLIER_SITE_ID = 1273; 
+
+--PAYMENT_METHOD;
+
+SELECT IEPA.*,REMIT_ADVANCE_DELIVERY_METHOD
+FROM AP_SUPPLIER_SITES_ALL ASSA,
+         IBY_EXTERNAL_PAYEES_ALL IEPA
+WHERE 1=1
+    AND VENDOR_SITE_ID = SUPPLIER_SITE_ID;
+    
+SELECT * 
+FROM iby_ext_party_pmt_mthds
+WHERE EXT_PMT_PARTY_ID = 851; 
+--EXT_PAYEE_ID
+
+SELECT *
+FROM AP_SUPPLIERS
+WHERE SEGMENT1 = 160;
