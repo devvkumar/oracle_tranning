@@ -1,7 +1,7 @@
 OPTIONS (SKIP=1, ERRORS=10000, DIRECT=FALSE)
 
 LOAD DATA  
-INFILE 'XXQGEN_test_date_format_ak.csv'
+INFILE 'XXQGEN_test_date_format_dk.csv'
 REPLACE  
 INTO TABLE XXQGEN_test_date_format_ak  
 FIELDS TERMINATED BY '|'  
