@@ -1,0 +1,114 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<dataTemplate name="XXQGEN_LEX_HDR_LINE_PKG_DK" 
+      defaultPackage="XXQGEN_LEX_HDR_LINE_PKG_DK" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+	<property name="debug_mode" value="on" />
+</properties>
+
+<parameters>
+	<parameter name="P_ORG_ID" dataType="character"/>
+	<parameter name="P_REQ_TYPE" dataType="character"/>
+	<parameter name="P_REQ_HDR_ID" dataType="character"/>
+	<parameter name="P_REQ_NAME_ID" dataType="character"/>
+	<parameter name="P_ITEM_ID" dataType="character"/>
+ </parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+            <![CDATA[ 
+            SELECT 
+                PRHA.REQUISITION_HEADER_ID HEADER_ID,
+                PRHA.PREPARER_ID,
+                PAPF.EMAIL_ADDRESS,
+                PAPF.FULL_NAME,
+                PRHA.SEGMENT1,
+                PRHA.DESCRIPTION,
+				PDTAV.DOCUMENT_TYPE_CODE REQ_TYPE,
+                PRHA.AUTHORIZATION_STATUS AUTH_STATUS,
+                PRHA.TYPE_LOOKUP_CODE LOOKUP_CODE,
+                PRHA.ORG_ID,
+                HOU.NAME ORG_NAME,
+                PDTAV.ORG_ID
+            FROM 
+                PO_REQUISITION_HEADERS_ALL PRHA,
+                PER_ALL_PEOPLE_F PAPF,
+                HR_ORGANIZATION_UNITS HOU,
+                PO_DOCUMENT_TYPES_ALL_VL PDTAV
+            WHERE 
+                PRHA.PREPARER_ID = PAPF.PERSON_ID
+                AND PRHA.ORG_ID = HOU.ORGANIZATION_ID
+                AND PDTAV.DOCUMENT_SUBTYPE = PRHA.TYPE_LOOKUP_CODE
+                AND PRHA.ORG_ID = PDTAV.ORG_ID
+                AND (PDTAV.DOCUMENT_TYPE_CODE = :P_REQ_TYPE OR :P_REQ_TYPE IS NULL)
+                AND (PRHA.REQUISITION_HEADER_ID = :P_REQ_HDR_ID OR :P_REQ_HDR_ID IS NULL)
+                AND (PRHA.ORG_ID = :P_ORG_ID OR :P_ORG_ID IS NULL)
+				AND (PAPF.PERSON_ID = :P_REQ_NAME_ID OR :P_REQ_NAME_ID IS NULL)
+            ]]>
+        </sqlStatement>
+        <sqlStatement name="Q_MAIN2">
+            <![CDATA[ 
+            SELECT 
+                PRLA.LINE_NUM, 
+                MSIB.description NAME,
+                PRLA.ITEM_DESCRIPTION DESCRIPTION,
+                PRLA.ITEM_ID,
+                PRLA.ORG_ID,
+				HOU.NAME ORG_NAME,
+                PRLA.QUANTITY, 
+				MSIB.SEGMENT1,
+                PRLA.UNIT_PRICE,
+                PRLA.QUANTITY * PRLA.UNIT_PRICE AMOUNT,
+                GCC.SEGMENT1 || '-' || GCC.SEGMENT2 || '-' || GCC.SEGMENT3 || '-' || GCC.SEGMENT4 CHARGE_ACCOUNT
+            FROM 
+                PO_REQUISITION_LINES_ALL PRLA,
+                PO_REQ_DISTRIBUTIONS_ALL PRDA,
+                MTL_SYSTEM_ITEMS_B MSIB,
+                GL_CODE_COMBINATIONS GCC,
+				hr_operating_units hou,
+				PO_REQUISITION_HEADERS_ALL PRHA
+            WHERE 1=1
+				AND PRHA.REQUISITION_HEADER_ID = PRLA.REQUISITION_HEADER_ID
+                AND PRDA.REQUISITION_LINE_ID = PRLA.REQUISITION_LINE_ID
+                AND PRDA.CODE_COMBINATION_ID = GCC.CODE_COMBINATION_ID
+                AND MSIB.INVENTORY_ITEM_ID = PRLA.ITEM_ID
+				AND HOU.ORGANIZATION_ID = MSIB.ORGANIZATION_ID
+                AND (MSIB.ORGANIZATION_ID = :P_ORG_ID OR :P_ORG_ID IS NULL)
+                AND (PRLA.REQUISITION_HEADER_ID = :P_REQ_HDR_ID OR :P_REQ_HDR_ID IS NULL)
+			&LP_ITEM
+
+
+]]>
+</sqlStatement>
+</dataQuery>
+<dataTrigger name="afterReportTrigger" source="XXQGEN_LEX_HDR_LINE_PKG_DK.afterreport"/>
+<dataTrigger name="beforeReportTrigger" source="XXQGEN_LEX_HDR_LINE_PKG_DK.beforereport"/>
+
+<element name="P_REQ_HDR_ID1" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG_DK.P_REQ_HDR_ID"/>
+<element name="P_ORG_ID1" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG_DK.P_ORG_ID"/> 
+<dataStructure>
+
+	<element name="USER_NAME" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG_DK.gc_user_name"/>	
+	<element name="REQUEST_ID" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG_DK.gn_request_id"/>
+	<element name="SUBMITION_DATE" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG_DK.gd_date"/>
+	<element name="RESP_NAME" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG_DK.gc_resp_name"/>
+<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+            <element name="REQ_TYPE" dataType="NUMBER" value="REQ_TYPE"/>
+            <element name="REQ_HEAD" dataType="NUMBER" value="P_REQ_HDR_ID"/>
+            <element name="REQNUMBER" dataType="NUMBER" value="SEGMENT1"/>
+            <element name="ORG_NAME" dataType="varchar2" value="ORG_NAME"/>
+            <element name="TYPE" dataType="varchar2" value="LOOKUP_CODE"/>
+            <element name="REQUESTER" dataType="varchar2" value="FULL_NAME"/>
+            <group name="G_MAIN2" dataType="varchar2" source="Q_MAIN2">
+                <element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+				<element name="ORG_NAME" dataType="varchar2" value="ORG_NAME"/>
+                <element name="NAME" dataType="varchar2" value="NAME"/>
+                <element name="DESCRIPTION" dataType="varchar2" value="DESCRIPTION"/>
+                <element name="ITEM" dataType="varchar2" value="ITEM"/>
+                <element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+                <element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+                <element name="AMOUNT" dataType="varchar2" value="AMOUNT"/>
+                <element name="CHARGE_ACCOUNT" dataType="varchar2" value="CHARGE_ACCOUNT"/>
+            </group>	
+</group>
+</dataStructure>
+</dataTemplate>

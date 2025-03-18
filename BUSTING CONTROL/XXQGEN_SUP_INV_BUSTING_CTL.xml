@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xapi:requestset xmlns:xapi="http://xmlns.oracle.com/oxp/xapi">
+  <xapi:request select="/XXQGEN_SUP_INV_AR/LIST_G_MAIN_1/G_MAIN_1">
+     <xapi:delivery>
+       <xapi:email id="123" server="ebs.example.com" port="25" 
+                   from="donotreplyqgen@gmail.com" reply-to="donotreplyqgen@gmail.com">
+         <xapi:message id="123" to="devkardam004@gmail.com" subject="Dev ${INVOICE_NUM}" attachment="true">
+          Please find your electronically formatted Invoice Details.
+         Best regards,
+         Quadragen Solutions Private Limited
+         Disclaimer: This is a system-generated document that does not require a signature.
+         </xapi:message>
+       </xapi:email>
+     </xapi:delivery>
+     <xapi:document output="AP_INVOICE_${INVOICE_NUM}" output-type="pdf" delivery="123">
+       <xapi:template type="rtf" location="xdo://PO.XXQGEN_SUP_INV_DK.en.US/?getSource=true" />
+     </xapi:document>
+  </xapi:request>
+</xapi:requestset>

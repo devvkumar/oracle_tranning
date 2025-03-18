@@ -1,19 +1,19 @@
+/* Formatted on 2/12/2025 10:35:52 AM (QP5 v5.163.1008.3004) */
 CREATE OR REPLACE PACKAGE XXQGEN_PO_REQ_IMP_DK
 AS
-   gn_org_id                               hr_all_organization_units.organization_id%TYPE := fnd_profile.VALUE ( 'ORG_ID' );
-   gc_user_name                            fnd_user.user_name%TYPE := fnd_profile.VALUE ( 'USERNAME' );
-   gc_resp_name                            fnd_responsibility_tl.responsibility_name%TYPE := fnd_profile.VALUE ( 'RESP_NAME' );
-   gn_request_id                           fnd_concurrent_requests.request_id%TYPE := fnd_profile.VALUE ( 'CONC_REQUEST_ID' );
-   gn_user_id                               fnd_user.user_id%TYPE := fnd_profile.VALUE ( 'USER_ID' );
-   gn_resp_id                               fnd_responsibility_tl.responsibility_id%TYPE := fnd_profile.VALUE ( 'RESP_ID' );
-   gn_resp_appl_id                           fnd_responsibility_tl.application_id%TYPE := fnd_profile.VALUE ( 'RESP_APPL_ID' );
-   gn_login_id                               fnd_logins.login_id%TYPE := fnd_profile.VALUE ( 'LOGIN_ID' );
-   
-   -- Declaration in the package spec (only once)
-   gc_request_id                            number;
-   gd_date                                   DATE := SYSDATE;
+
+    GC_REQUEST_ID       NUMBER      := FND_PROFILE.VALUE('CONC_REQUEST_ID');
     
-   FUNCTION BEFOREREPORT RETURN BOOLEAN;
-   FUNCTION AFTERREPORT RETURN BOOLEAN;
+   /***************************************************************************************************
+    * Program Name : XXQGEN_REQ_INT_DK.pks
+    * Language     : PL/SQL
+    * Description  : Specks for XXQGEN_REQ_INT_AD.pks
+    * History      :
+    * WHO              Version #   WHEN            WHAT
+    * ======================================================================
+    * DKUMAR          1.0         11-FEB-2025     Initial Version
+    *******************************S********************************************************************/
+    PROCEDURE BEFOREREPORT;
+    PROCEDURE AFTERREPORT;
 
 END XXQGEN_PO_REQ_IMP_DK;

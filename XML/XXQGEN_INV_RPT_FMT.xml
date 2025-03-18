@@ -52,7 +52,8 @@ SELECT PHA.SEGMENT1  PO_NUMBER,
        PO_HEADERS_ARCHIVE_ALL PHAA,
        PER_ALL_PEOPLE_F PAPF2,
        PER_ALL_PEOPLE_F PAPF
- WHERE   PHA.CREATED_BY = FU1.USER_ID
+ WHERE 1=1
+	   AND PHA.CREATED_BY = FU1.USER_ID
        AND PAPF.PERSON_ID = FU1.EMPLOYEE_ID
        AND PHA.LAST_UPDATED_BY = FU2.USER_ID
        AND PHA.VENDOR_ID = APS.VENDOR_ID
@@ -156,5 +157,6 @@ WHERE 1=1
 			</group>
 			<element name="SUM_AMOUNT" function="sum" dataType="number" value="AMOUNT"/>
 		</group>
+		<element name="GRAND_AMOUNT" function="sum" dataType="number" value="SUM_AMOUNT"/>
 	</dataStructure>
 </dataTemplate>
