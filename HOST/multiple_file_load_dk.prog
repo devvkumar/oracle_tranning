@@ -1,0 +1,79 @@
+#!/bin/bash
+
+##-------------------------------------------------------------------------------------------------
+##  File        : XXQGEN
+##-------------------------------------------------------------------------------------------------
+##
+## SNOW PROJECT    :
+## SNOW REQ ITEM   :
+## SNOW CHANGE REQ :
+##
+## Program Control
+## ===============
+##
+## WHO              Version #   WHEN            WHAT
+## ===============  =========   =============   ===================================================
+##
+##-------------------------------------------------------------------------------------------------
+
+echo "Setting Parameters..."
+
+# Parameters from command line
+program="XXQGEN"
+userpass="$1"
+user="$2"
+passwd="$3"
+reqid="$4"
+file_name="$5"
+
+# Set up variables
+P_LOGIN="$userpass"
+P_REQID="$reqid"
+P_USERID="$usrid"       # Make sure to pass $usrid if used later
+P_USERNAME="$user"
+
+# File names
+CTL_FILE="$file_name.ctl"
+CSV_FILE="$file_name.csv"
+
+# Directories (replace paths if needed)
+CTL_PATH='/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/bin'
+CSV_DIR='/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/bin'
+LOG_DIR='/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/dev_log/log'
+BAD_DIR='/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/dev_log/bad'
+DIS_FILE=''
+ARCH_PATH='/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/dev_log/archive'
+
+# Timestamp (no colons in filenames)
+ldate=$(date +'%d-%m-%Y_%H-%M-%S.%3N')
+
+# Print Parameter Listing
+echo "***************************** Parameter Listing *****************************"
+echo "Request Id                          : $P_REQID"
+echo "Userid                              : $P_LOGIN"
+echo "Username                            : $P_USERNAME"
+echo "Control File Path                   : $CTL_PATH"
+echo "Control File                        : $CTL_FILE"
+echo "CSV Directory                       : $CSV_DIR"
+echo "CSV File                            : $CSV_FILE"
+echo "LOG Directory                       : $LOG_DIR"
+echo "BAD Directory                       : $BAD_DIR"
+echo "DIS FILE                            : $DIS_FILE"
+echo "ARCHIVE PATH                        : $ARCH_PATH"
+echo "Date                                : $ldate"
+echo "*****************************************************************************"
+
+# Move to the CSV directory
+cd "$CSV_DIR" || exit 1
+
+# Loop through all CSV files and process them
+for file in *.csv; do
+    
+    echo "Processing File: $file"
+
+    # Run SQL*Loader
+    sqlldr userid="$P_LOGIN" control="$CTL_PATH/$CTL_FILE"  data="$CSV_DIR/$file"    log="$LOG_DIR/${file}_${ldate}.log"    bad="$BAD_DIR/${file}_${ldate}.bad" 
+
+done
+
+echo "Script execution completed."

@@ -1,0 +1,43 @@
+##-------------------------------------------------------------------------------------------------
+##  File        : XXQGEN_Load_Data
+##-------------------------------------------------------------------------------------------------
+##
+## SNOW PROJECT    : LOAD_DATA_DK
+## SNOW REQ ITEM   :
+## SNOW CHANGE REQ :
+## Program Control
+## ===============
+##
+## WHO              Version #   WHEN            WHAT
+## ===============================================================================================
+## DKUMAR           1.0          21/3/2025       LOAD DATA IN STAGING TABLE
+##-------------------------------------------------------------------------------------------------
+
+echo "Setting Parameters"
+
+program='XXQGEN Load Data'
+userpass=$1
+user=$2
+passwd=$3
+reqid=$4
+file_name=$5
+
+control_file="/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/bin/$file_name.ctl"
+data_file="/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/bin/$file_name.csv"
+log_file="/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/bin/$file_name.log"
+
+# Running SQL*Loader command
+sqlldr userid=apps/apps control=$control_file DATA=$data_file LOG=$log_file
+
+# Echoing the parameters
+echo "program name : $program"
+echo "userpass : $userpass"
+echo "user : $user"
+echo "password : $passwd"
+echo "request_id : $reqid"
+echo "user_id : $usrid"
+echo "control_file : $control_file"
+echo "data_file : $data_file"
+echo "log_file : $log_file"
+
+echo 'Everything worked successfully'

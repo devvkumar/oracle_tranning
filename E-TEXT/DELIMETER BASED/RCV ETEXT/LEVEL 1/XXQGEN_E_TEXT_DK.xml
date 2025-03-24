@@ -1,0 +1,86 @@
+<dataTemplate name="XXQGEN_E_TEXT_DK" version="1.0">
+<properties>
+    <property name="xml_tag_case" value="upper"/>
+	<property name="debug_mode" value="on" />
+</properties>
+
+<parameters>
+    <parameter name="P_RECIPT_NUM" dataType="CHARACTER"/>
+</parameters>
+
+<dataQuery>
+    <sqlStatement name="Q_MAIN">
+      <![CDATA[
+        SELECT MIL.CONCATENATED_SEGMENTS STORAGE_LOCATION,
+               RSH.RECEIPT_NUM,
+               ASSA.COUNTRY,
+               ASSA.FOB_LOOKUP_CODE INCOTERMS,
+               MMT.CURRENCY_CODE,
+               (SELECT IEB.BANK_ACCOUNT_NUM
+                  FROM IBY_EXTERNAL_PAYEES_ALL IEP,
+                       IBY_PMT_INSTR_USES_ALL IPI,
+                       IBY_EXT_BANK_ACCOUNTS IEB
+                 WHERE 1 = 1
+                   AND IEP.EXT_PAYEE_ID = IPI.EXT_PMT_PARTY_ID(+)
+                   AND IPI.INSTRUMENT_ID = IEB.EXT_BANK_ACCOUNT_ID
+                   AND IPI.INSTRUMENT_TYPE = 'BANKACCOUNT'
+                   AND TRUNC(SYSDATE) < TRUNC(NVL(IPI.END_DATE, SYSDATE + 1))
+                   AND IEP.PAYMENT_FUNCTION = 'PAYABLES_DISB'
+                   AND IEP.SUPPLIER_SITE_ID = ASSA.VENDOR_SITE_ID
+                   AND ROWNUM <= 1) ACCOUNT_NUMBER,
+               MSIB.SEGMENT1 ITEM,
+               MMT.TRANSACTION_QUANTITY QTY,
+               MMT.TRANSACTION_UOM UOM,
+               NULL COMODITY_CODE,
+               MSIB.DESCRIPTION,
+               ASSA.COUNTRY,
+               MSIB.UNIT_WEIGHT,
+               (MMT.TRANSACTION_QUANTITY * MMT.TRANSACTION_COST) NET_VALUE,
+               RT.QUANTITY,
+               PHA.SEGMENT1 PO_NUMBER,
+               PHA.CREATION_DATE GL_DATE
+        FROM RCV_SHIPMENT_HEADERS RSH,
+             RCV_SHIPMENT_LINES RSL,
+             RCV_TRANSACTIONS RT,
+             PO_HEADERS_ALL PHA,
+             MTL_MATERIAL_TRANSACTIONS MMT,
+             MTL_ITEM_LOCATIONS_KFV MIL,
+             AP_SUPPLIER_SITES_ALL ASSA,
+             MTL_SYSTEM_ITEMS_B MSIB
+        WHERE RSH.SHIPMENT_HEADER_ID = RSL.SHIPMENT_HEADER_ID
+          AND RSL.SHIPMENT_HEADER_ID = RT.SHIPMENT_HEADER_ID
+          AND RSL.SHIPMENT_LINE_ID = RT.SHIPMENT_LINE_ID
+          AND RT.PO_HEADER_ID = PHA.PO_HEADER_ID
+          AND RT.TRANSACTION_ID = MMT.RCV_TRANSACTION_ID
+          AND MMT.LOCATOR_ID = MIL.INVENTORY_LOCATION_ID
+          AND MMT.INVENTORY_ITEM_ID = MSIB.INVENTORY_ITEM_ID
+          AND MMT.ORGANIZATION_ID = MSIB.ORGANIZATION_ID
+          AND RT.VENDOR_SITE_ID = ASSA.VENDOR_SITE_ID
+          AND RT.TRANSACTION_TYPE = 'DELIVER'
+          AND RSH.RECEIPT_NUM =:P_RECIPT_NUM
+      ]]>
+    </sqlStatement>
+</dataQuery>
+
+<dataStructure>
+    <group name="G_MAIN" dataType="VARCHAR2" source="Q_MAIN">
+      <element name="STORAGE_LOCATION" dataType="VARCHAR2" value="STORAGE_LOCATION"/>
+      <element name="RECEIPT_NUM" dataType="VARCHAR2" value="RECEIPT_NUM"/>
+      <element name="COUNTRY" dataType="VARCHAR2" value="COUNTRY"/>
+      <element name="INCOTERMS" dataType="VARCHAR2" value="INCOTERMS"/>
+      <element name="CURRENCY_CODE" dataType="VARCHAR2" value="CURRENCY_CODE"/>
+      <element name="ACCOUNT_NUMBER" dataType="VARCHAR2" value="ACCOUNT_NUMBER"/>
+      <element name="ITEM" dataType="VARCHAR2" value="ITEM"/>
+      <element name="QTY" dataType="VARCHAR2" value="QTY"/>
+      <element name="UOM" dataType="VARCHAR2" value="UOM"/>
+      <element name="COMODITY_CODE" dataType="VARCHAR2" value="COMODITY_CODE"/>
+      <element name="DESCRIPTION" dataType="VARCHAR2" value="DESCRIPTION"/>
+      <element name="COUNTRY" dataType="VARCHAR2" value="COUNTRY"/>
+      <element name="UNIT_WEIGHT" dataType="VARCHAR2" value="UNIT_WEIGHT"/>
+      <element name="NET_VALUE" dataType="VARCHAR2" value="NET_VALUE"/>
+      <element name="QUANTITY" dataType="VARCHAR2" value="QUANTITY"/>
+      <element name="PO_NUMBER" dataType="VARCHAR2" value="PO_NUMBER"/>
+      <element name="GL_DATE" dataType="VARCHAR2" value="GL_DATE"/>
+    </group>
+</dataStructure>
+</dataTemplate>

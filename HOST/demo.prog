@@ -1,0 +1,15 @@
+echo "running sql-ldr"
+control_file="/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/bin/XXQGEN_TEST_DK.ctl"
+data_file="/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/bin/XXQGEN_TEST_DK.csv"
+log_file="/u01/install/VISION/fs1/EBSapps/appl/po/12.0.0/bin/XXQGEN_TEST_DK.log"
+sqlldr userid=apps/apps control=$control_file DATA=$data_file
+echo "*"
+if [grep -qi "error" $log_file]; then
+echo "sql-loader encountered a error. pleas check $log_file for details."
+exit 1
+else
+echo "sql-loader executed successfully at $(date)"
+fi
+echo "script execution finished at $(date)"
+echo "proces compleated exitimg"
+echo "working fine"
