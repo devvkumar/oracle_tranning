@@ -1,0 +1,160 @@
+<dataTemplate version="1.0" name="XXQGEN_COH_RPT_DK">
+    <properties>
+        <property name="xml_tag_case" value="upper"/>
+        <property name="debug_mode" value="on"/>
+    </properties>
+    <parameters> 
+	<parameter name="ODR_NO" dataType="CHARACTER"/>
+	</parameters>
+    <dataQuery> 
+        <sqlStatement name="Q_MAIN">
+            <![CDATA[
+            SELECT 
+                wnd.name AS delivery_number,       
+                wnd.ultimate_dropoff_date AS delivery_date,
+                oel.cust_po_number,
+                wnd.carrier_id,
+                oeh.order_number AS sales_order_number,       
+                hzl.address_line_1 || ' ' || hzl.address_line_2 || ' ' || hzl.address_line_3 || ' ' || hzl.town_or_city AS sales_org_details,       
+                hp.party_id AS Ship_to_party_id,
+                oeh.attribute17 AS invoice_address,
+                NULL AS Forwarding_agent,
+                NULL AS Customer_descr_of_partner,
+                oeh.fob_point_code AS Incoterms_of_delivery,
+                wnd.mode_of_transport AS Means_of_Transport_Type,
+                wnd.waybill AS Bill_of_lading,
+                NULL AS Box_label,
+                NULL AS box_id,
+                oel.ordered_item AS Item_Number_of_delivery_note,
+                oel.ordered_item AS customer_item_number,
+                oel.ordered_item AS item_number,
+                (SELECT description
+                 FROM mtl_system_items_b msib
+                 WHERE msib.inventory_item_id = oel.inventory_item_id
+                 AND ROWNUM <= 1) AS item_description,
+                oel.shipped_quantity AS Quantity_of_delivery_item,
+                oel.order_quantity_uom AS Unit_of_measurement,
+                mut.serial_number AS Serial_numbers,
+                oel.subinventory AS storage_location,
+                NULL AS pl_code2,
+                oel.line_number AS Sales_order_line_number,
+                hp.party_name AS Customer_Name,
+                hca.account_number AS customer_number,
+                hp.party_id AS Ship_to_customer_ID,
+                hp.party_name AS Ship_to_Customer_Name,
+                hl.address1 || ' ' || hl.address2 || ' ' || hl.address3 || ' ' || hl.address4 AS Shipto_Customer_Address,
+                hl.address2 AS Shipto_Customer_Street,
+                hl.city AS Shipto_Customer_City,
+                hl.county AS Shipto_Customer_District,
+                hl.country AS Shipto_Customer_Country,
+                hl.postal_code AS Postal_Code,
+                hpc.party_name AS Carrier_Name,
+                NULL AS Incoterms_part2,
+                NULL AS Special_Ship_Instructions,
+                NULL AS Proforma_Invoice_number
+            FROM 
+                wsh_new_deliveries wnd,
+                wsh_delivery_assignments wda,
+                wsh_delivery_details wdd,
+                wsh_carrier_services wcs,
+                oe_order_headers_all oeh,
+                oe_order_lines_all oel,
+                org_organization_definitions ood,
+                mtl_material_transactions mmt,
+                mtl_unit_transactions mut,
+                hz_cust_accounts hca,
+                hz_parties hp,
+                hz_cust_site_uses_all hcsuas,      
+                hz_cust_acct_sites_all hcasas,
+                hz_party_sites hps,
+                hz_locations hl,
+                hz_parties hpc,
+                hz_party_usg_assignments hpu,
+                HR_organization_units hou,
+                hr_locations hzl
+            WHERE 
+                1 = 1
+                AND wda.delivery_detail_id = wdd.delivery_detail_id
+                AND wda.delivery_id = wnd.delivery_id(+)
+                AND wnd.carrier_id = hpc.party_id
+                AND hpc.party_id = hpu.party_id(+)
+                AND hpu.party_usage_code(+) = 'TRANSPORTATION_PROVIDER'
+                AND wnd.carrier_id = wcs.carrier_id
+                AND wnd.ship_method_code = wcs.ship_method_code
+                AND wdd.source_header_id = oeh.header_id
+                AND wdd.source_line_id = oel.line_id
+                AND oeh.header_id = oel.header_id
+                AND oeh.ship_from_org_id = ood.organization_id
+                AND oeh.sold_from_org_id = hou.organization_id
+                AND hou.location_id = hzl.location_id
+                AND mmt.trx_source_delivery_id = wnd.delivery_id
+                AND mut.transaction_id(+) = mmt.transaction_id
+                AND oeh.sold_to_org_id = hca.cust_account_id
+                AND hca.party_id = hp.party_id
+                AND oeh.ship_to_org_id = hcsuas.site_use_id
+                AND hcasas.cust_acct_site_id = hcsuas.cust_acct_site_id
+                AND hps.party_site_id = hcasas.party_site_id
+                AND hl.location_id = hps.location_id  
+                AND hcsuas.site_use_code = 'SHIP_TO'
+				AND WND.NAME=:ODR_NO
+                AND ROWNUM < 20
+            ]]>
+        </sqlStatement>
+    </dataQuery>
+    <dataStructure>
+        <group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+            <element name="DELIVERY_NUMBER" dataType="varchar2" value="DELIVERY_NUMBER"/>
+            <element name="DELIVERY_DATE" dataType="varchar2" value="DELIVERY_DATE"/>
+            <element name="CARRIER_ID" dataType="varchar2" value="CARRIER_ID"/>
+            <element name="SALES_ORDER_NUMBER" dataType="varchar2" value="SALES_ORDER_NUMBER"/>
+            <element name="SALES_ORG_DETAILS" dataType="varchar2" value="SALES_ORG_DETAILS"/>
+            <element name="SHIP_TO_PARTY_ID" dataType="varchar2" value="SHIP_TO_PARTY_ID"/>
+            <element name="INVOICE_ADDRESS" dataType="varchar2" value="INVOICE_ADDRESS"/>
+            <element name="FORWARDING_AGENT" dataType="varchar2" value="FORWARDING_AGENT"/>
+            <element name="CUSTOMER_NAME" dataType="varchar2" value="CUSTOMER_NAME"/>
+            <element name="CUSTOMER_NUMBER" dataType="varchar2" value="CUSTOMER_NUMBER"/>
+            <element name="CUSTOMER_DESCR_OF_PARTNER" dataType="varchar2" value="CUSTOMER_DESCR_OF_PARTNER"/>
+            <element name="INCOTERMS_OF_DELIVERY" dataType="varchar2" value="INCOTERMS_OF_DELIVERY"/>
+            <element name="MEANS_OF_TRANSPORT_TYPE" dataType="varchar2" value="MEANS_OF_TRANSPORT_TYPE"/>
+            <element name="BILL_OF_LADING" dataType="varchar2" value="BILL_OF_LADING"/>
+            <element name="BOX_LABEL" dataType="varchar2" value="BOX_LABEL"/>
+            <element name="BOX_ID" dataType="varchar2" value="BOX_ID"/>
+            <element name="ITEM_NUMBER_OF_DELIVERY_NOTE" dataType="varchar2" value="ITEM_NUMBER_OF_DELIVERY_NOTE"/>
+            <element name="CUSTOMER_ITEM_NUMBER" dataType="varchar2" value="CUSTOMER_ITEM_NUMBER"/>
+            <element name="SHIP_TO_CUSTOMER_ID" dataType="varchar2" value="SHIP_TO_CUSTOMER_ID"/>
+            <element name="SHIP_TO_CUSTOMER_NAME" dataType="varchar2" value="SHIP_TO_CUSTOMER_NAME"/>
+            <element name="SHIPTO_CUSTOMER_ADDRESS" dataType="varchar2" value="SHIPTO_CUSTOMER_ADDRESS"/>
+            <element name="SHIPTO_CUSTOMER_STREET" dataType="varchar2" value="SHIPTO_CUSTOMER_STREET"/>
+            <element name="SHIPTO_CUSTOMER_CITY" dataType="varchar2" value="SHIPTO_CUSTOMER_CITY"/>
+            <element name="SHIPTO_CUSTOMER_DISTRICT" dataType="varchar2" value="SHIPTO_CUSTOMER_DISTRICT"/>
+            <element name="SHIPTO_CUSTOMER_COUNTRY" dataType="varchar2" value="SHIPTO_CUSTOMER_COUNTRY"/>
+            <element name="POSTAL_CODE" dataType="varchar2" value="POSTAL_CODE"/>
+            <element name="SHIP_FROM_ORG" dataType="varchar2" value="SHIP_FROM_ORG"/>
+            <element name="SHIP_FROM_LOCATION_CODE" dataType="varchar2" value="SHIP_FROM_LOCATION_CODE"/>
+            <element name="SHIP_ADD" dataType="varchar2" value="SHIP_ADD"/>
+            <element name="SHIP_TOWN_OR_CITY" dataType="varchar2" value="SHIP_TOWN_OR_CITY"/>
+            <element name="SHIP_COUNTRY" dataType="varchar2" value="SHIP_COUNTRY"/>
+            <element name="SHIP_POSTAL_CODE" dataType="varchar2" value="SHIP_POSTAL_CODE"/>
+            <element name="INVOICE_TO_ORG" dataType="varchar2" value="INVOICE_TO_ORG"/>
+            <element name="INVO_LOC_CODE" dataType="varchar2" value="INVO_LOC_CODE"/>
+            <element name="INVO_ADD" dataType="varchar2" value="INVO_ADD"/>
+            <element name="INVO_TOWN_OR_CITY" dataType="varchar2" value="INVO_TOWN_OR_CITY"/>
+            <element name="INVO_COUNTRY" dataType="varchar2" value="INVO_COUNTRY"/>
+            <element name="INVO_POSTAL_CODE" dataType="varchar2" value="INVO_POSTAL_CODE"/>
+            <group name="G_MAIN2" dataType="varchar2" source="Q_MAIN">
+                <element name="ITEM_NUMBER" dataType="varchar2" value="ITEM_NUMBER"/>
+                <element name="ITEM_DESCRIPTION" dataType="varchar2" value="ITEM_DESCRIPTION"/>
+                <element name="QUANTITY_OF_DELIVERY_ITEM" dataType="varchar2" value="QUANTITY_OF_DELIVERY_ITEM"/>
+                <element name="UNIT_OF_MEASUREMENT" dataType="varchar2" value="UNIT_OF_MEASUREMENT"/>
+                <element name="SERIAL_NUMBERS" dataType="varchar2" value="SERIAL_NUMBERS"/>
+                <element name="STORAGE_LOCATION" dataType="varchar2" value="STORAGE_LOCATION"/>
+                <element name="PL_CODE2" dataType="varchar2" value="PL_CODE2"/>
+                <element name="SALES_ORDER_LINE_NUMBER" dataType="varchar2" value="SALES_ORDER_LINE_NUMBER"/>
+                <element name="CARRIER_NAME" dataType="varchar2" value="CARRIER_NAME"/>
+                <element name="INCOTERMS_PART2" dataType="varchar2" value="INCOTERMS_PART2"/>
+                <element name="SPECIAL_SHIP_INSTRUCTIONS" dataType="varchar2" value="SPECIAL_SHIP_INSTRUCTIONS"/>
+                <element name="PROFORMA_INVOICE_NUMBER" dataType="varchar2" value="PROFORMA_INVOICE_NUMBER"/>
+            </group>
+        </group>
+    </dataStructure>
+</dataTemplate>
