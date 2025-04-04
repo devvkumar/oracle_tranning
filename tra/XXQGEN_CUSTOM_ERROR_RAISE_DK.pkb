@@ -1,0 +1,65 @@
+create or replace package body xxqgen_custom_error_raise_dk
+as
+
+    PROCEDURE TEST
+    IS
+        NORMAL_USER_DEFINE_ERROR EXCEPTION;
+        USER_DEFINE_ERROR   EXCEPTION;
+        PRAGMA EXCEPTION_INIT(USER_DEFINE_ERROR, -20001);
+        LV_ZERO     NUMBER  := 0;
+    BEGIN
+    
+        FOR I IN 1..10
+        LOOP
+            FND_FILE.PUT_LINE(FND_FILE.LOG, 'LOOP ITRATION : ' || I );
+            RAISE USER_DEFINE_ERROR;
+        END LOOP;
+        
+        RAISE NORMAL_USER_DEFINE_ERROR;
+        
+        FND_FILE.PUT_LINE(FND_FILE.LOG, 'ERROR IN TEST');
+    
+    EXCEPTION
+        WHEN USER_DEFINE_ERROR THEN 
+            FND_FILE.PUT_LINE(FND_FILE.LOG, 'CUSTOM ERROR RAISE ');
+            
+        WHEN NORMAL_USER_DEFINE_ERROR THEN
+            FND_FILE.PUT_LINE(FND_FILE.LOG, 'NORMAL CUSTOM ERROR RAISE' );
+           
+    END TEST;
+    
+    procedure main(ERRBUF OUT VARCHAR2, RETCODE OUT NUMBER)
+    is
+    NORMAL_USER_DEFINE_ERROR EXCEPTION;
+    USER_DEFINE_ERROR   EXCEPTION;
+    PRAGMA EXCEPTION_INIT(USER_DEFINE_ERROR, -20001);
+    
+    CREDIT_LIMIT_EXCEED EXCEPTION;
+    PRAGMA EXCEPTION_INIT(CREDIT_LIMIT_EXCEED, -20111);
+    LV_ZERO     NUMBER  := 0;
+    begin
+--        IF LV_ZERO = 0 THEN
+--            RAISE NORMAL_USER_DEFINE_ERROR;
+--        END IF;
+        FND_FILE.PUT_LINE(FND_FILE.LOG, 'STATEMENT 1 : READY FOR LOOP :');
+        FOR I IN 1..10
+        LOOP
+            FND_FILE.PUT_LINE(FND_FILE.LOG, I);
+        END LOOP;
+--        RAISE USER_DEFINE_ERROR;
+--        FND_FILE.PUT_LINE(FND_FILE.LOG, 'STATEMENT2 : END LOOP');
+        TEST;
+        FND_FILE.PUT_LINE(FND_FILE.LOG, 'STATEMENT3 : WORK AFTER TEST');
+        raise_application_error(-20111,'Credit Limit Exceeded');
+        FND_FILE.PUT_LINE(FND_FILE.LOG, 'STATEMENT4 : DONT KNOW WHY');
+    EXCEPTION
+        WHEN USER_DEFINE_ERROR THEN 
+            FND_FILE.PUT_LINE(FND_FILE.LOG, 'CUSTOM ERROR RAISE ');
+            RETCODE := 2;
+            
+        WHEN NORMAL_USER_DEFINE_ERROR THEN
+            FND_FILE.PUT_LINE(FND_FILE.LOG, 'NORMAL CUSTOM ERROR RAISE' );
+            RETCODE := 1;
+    end main;
+end xxqgen_custom_error_raise_dk;
+/
