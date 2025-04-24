@@ -1,0 +1,117 @@
+--BOC
+SELECT aca.check_number
+      ,aca.currency_code
+      ,aca.amount
+      ,ce.bank_account_name payer_account_name
+      ,ce.bank_account_num payer_account_number
+      ,ieba.bank_account_num payee_bank_account_number
+      ,ieba.bank_account_name payee_bank_account_name
+      ,ieba.bank_name payee_bank_name
+      ,ieba.branch_number payee_branch_number
+FROM ap_checks_all aca
+    ,iby_payments_all ipa
+    ,ce_bank_accounts ce
+    ,iby_payee_all_bankacct_v ieba
+WHERE     1 = 1
+      AND aca.external_bank_account_id = ieba.ext_bank_account_id
+      AND ipa.internal_bank_account_id = ce.bank_account_id
+      AND aca.payment_id = ipa.payment_id
+      AND aca.check_id > 13213897;
+
+--CCB-TXT
+SELECT aca.check_number
+      ,aca.currency_code
+      ,aca.amount
+      ,ce.bank_account_name payer_account_name
+      ,ce.bank_account_num payer_account_number
+      ,hl.address_line_1 || ',' || hl.address_line_2 || ',' || hl.town_or_city || ',' || hl.country payer_address
+      ,ieba.bank_account_num payee_bank_account_number
+      ,ieba.bank_account_name payee_bank_account_name
+      ,ieba.bank_name payee_bank_name
+      ,ieba.branch_number payee_branch_number
+FROM ap_checks_all aca
+    ,iby_payments_all ipa
+    ,ce_bank_accounts ce
+    ,iby_payee_all_bankacct_v ieba
+    ,hr_all_organization_units haou
+    ,hr_locations hl
+WHERE     1 = 1
+      AND haou.location_id = hl.location_id
+      AND aca.org_id = haou.organization_id
+      AND aca.external_bank_account_id = ieba.ext_bank_account_id
+      AND ipa.internal_bank_account_id = ce.bank_account_id
+      AND aca.payment_id = ipa.payment_id
+      AND aca.check_id > 13213897;
+	  
+--CIB-TXT
+SELECT aca.check_number
+      ,aca.currency_code
+      ,aca.amount
+      ,ce.bank_account_name payer_account_name
+      ,ce.bank_account_num payer_account_number
+      ,ieba.bank_account_num payee_bank_account_number
+      ,ieba.bank_account_name payee_bank_account_name
+      ,ieba.bank_name payee_bank_name
+      ,ieba.branch_number payee_branch_number
+      ,aca.city vendor_city
+FROM ap_checks_all aca
+    ,iby_payments_all ipa
+    ,ce_bank_accounts ce
+    ,iby_payee_all_bankacct_v ieba
+WHERE     1 = 1
+      AND aca.external_bank_account_id = ieba.ext_bank_account_id
+      AND ipa.internal_bank_account_id = ce.bank_account_id
+      AND aca.payment_id = ipa.payment_id
+      AND aca.check_id > 13213897;
+
+--Citi Bank
+SELECT aca.check_number
+      ,aca.currency_code
+      ,aca.amount
+      ,aca.check_date value_date
+      ,ce.bank_account_num funding_account_number
+      ,ieba.bank_account_num ben_bank_account_number
+      ,ieba.bank_account_name ben_bank_account_name
+      ,ieba.bank_name ben_bank_name
+      ,ieba.branch_number ben_branch_number
+      ,asup.vendor_name transaction_ref
+FROM ap_checks_all aca
+    ,iby_payments_all ipa
+    ,ce_bank_accounts ce
+    ,iby_payee_all_bankacct_v ieba
+    ,ap_suppliers asup
+WHERE     1 = 1
+      AND aca.vendor_id = asup.vendor_id
+      AND aca.external_bank_account_id = ieba.ext_bank_account_id
+      AND ipa.internal_bank_account_id = ce.bank_account_id
+      AND aca.payment_id = ipa.payment_id
+      AND aca.check_id > 13213897;
+	  
+--BOA
+SELECT aca.check_number
+      ,aca.currency_code
+      ,aca.amount debit_amount
+      ,aca.check_date value_date
+      ,ce.bank_account_num debit_account
+      ,cbb.branch_number debit_branch_number
+      ,ieba.bank_account_num ben_bank_account_number
+      ,asup.vendor_name ben_name
+      ,NULL ben_bank_id_sap_key
+      ,assa.address_line1 ben_address
+      ,assa.city ben_city
+      ,assa.county ben_country
+FROM ap_checks_all aca
+    ,iby_payments_all ipa
+    ,ce_bank_accounts ce
+    ,iby_payee_all_bankacct_v ieba
+    ,ap_suppliers asup
+    ,ce_bank_branches_v cbb
+    ,ap_supplier_sites_all assa
+WHERE     1 = 1
+      AND aca.vendor_site_id = assa.vendor_site_id
+      AND ce.bank_branch_id = cbb.pk_id
+      AND aca.vendor_id = asup.vendor_id
+      AND aca.external_bank_account_id = ieba.ext_bank_account_id
+      AND ipa.internal_bank_account_id = ce.bank_account_id
+      AND aca.payment_id = ipa.payment_id
+      AND aca.check_id > 13213897;

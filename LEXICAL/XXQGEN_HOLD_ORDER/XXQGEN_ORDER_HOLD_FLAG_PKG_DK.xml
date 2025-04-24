@@ -1,0 +1,72 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<dataTemplate name="XXQGEN_ORDER_HOLD_FLAG_PKG_DK" 
+      defaultPackage="XXQGEN_ORDER_HOLD_FLAG_PKG_DK" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+	<property name="debug_mode" value="on" />
+</properties>
+
+<parameters>
+	<parameter name="P_FLAG" dataType="character"/>
+	<parameter name="P_YEAR" dataType="character"/>
+ </parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[ 
+SELECT OOHA.HEADER_ID,
+            OOHA.ORDER_NUMBER,
+            TO_CHAR(OOHA.ORDERED_DATE, 'DD-MON-RRRR HH24:MI:SS'),
+            OOLA.ORDERED_ITEM,
+            OOLA.ORDERED_QUANTITY QTY,
+            OOLA.UNIT_SELLING_PRICE PRICE,
+            OOLA.ORDERED_QUANTITY * OOLA.UNIT_SELLING_PRICE TOTAL_PRICE,
+            OHD.NAME REASON,
+            OHD.DESCRIPTION,
+            TO_CHAR(OHS.CREATION_DATE, 'DD-MON-RRRR HH24:MI:SS') HOLD_DATE,
+            HOLD_BY.USER_NAME HOLD_BY,
+            TO_CHAR(OHR.CREATION_DATE, 'DD-MON-RRRR HH24:MI:SS') RELEASE_DATE,
+            RELEASE_BY.USER_NAME RELEASE_BY
+FROM OE_ORDER_HEADERS_ALL OOHA,
+          OE_ORDER_LINES_ALL OOLA,
+          OE_ORDER_HOLDS_ALL OHA,
+          OE_HOLD_SOURCES OHS,
+          OE_HOLD_DEFINITIONS OHD,
+          OE_HOLD_RELEASES OHR,
+          FND_USER HOLD_BY,
+          FND_USER RELEASE_BY
+WHERE 1=1
+    AND OOHA.HEADER_ID = OOLA.HEADER_ID
+    AND OOLA.LINE_ID = OHA.LINE_ID
+    AND OHA.HOLD_SOURCE_ID = OHS.HOLD_SOURCE_ID
+    AND OHS.HOLD_ID = OHD.HOLD_ID
+    AND OHS.HOLD_RELEASE_ID = OHR.HOLD_RELEASE_ID
+    AND OHR.CREATED_BY = RELEASE_BY.USER_ID
+    AND OHS.CREATED_BY = HOLD_BY.USER_ID
+	AND TO_CHAR(OHS.CREATION_DATE, 'RRRR') = TO_CHAR(:P_YEAR)
+    &CODE
+   
+]]>
+</sqlStatement>
+</dataQuery>
+<dataTrigger name="afterReportTrigger" source="XXQGEN_ORDER_HOLD_FLAG_PKG_DK.afterreport"/>
+<dataTrigger name="beforeReportTrigger" source="XXQGEN_ORDER_HOLD_FLAG_PKG_DK.beforereport"/>
+
+<element name="P_HOLD_FLAG" dataType="number" value="XXQGEN_ORDER_HOLD_FLAG_PKG_DK.P_FLAG"/>
+<element name="P_HOLD_YEAR" dataType="number" value="XXQGEN_ORDER_HOLD_FLAG_PKG_DK.P_YEAR"/> 
+<dataStructure>	
+<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+	<element name="ORDER_NUMBER" dataType="NUMBER" value="ORDER_NUMBER"/>
+	<element name="ORDERED_DATE" dataType="varchar2" value="ORDERED_DATE"/>
+	<element name="ORDERED_ITEM" dataType="varchar2" value="ORDERED_ITEM"/>
+	<element name="QTY" dataType="varchar2" value="QTY"/>
+	<element name="PRICE" dataType="varchar2" value="PRICE"/>
+	<element name="TOTAL_PRICE" dataType="varchar2" value="TOTAL_PRICE"/>
+	<element name="REASON" dataType="varchar2" value="REASON"/>
+	<element name="DESCRIPTION" dataType="varchar2" value="DESCRIPTION"/>
+	<element name="HOLD_DATE" dataType="varchar2" value="HOLD_DATE"/>
+	<element name="HOLD_BY" dataType="varchar2" value="HOLD_BY"/>
+	<element name="RELEASE_DATE" dataType="varchar2" value="RELEASE_DATE"/>
+	<element name="RELEASE_BY" dataType="varchar2" value="RELEASE_BY"/>
+</group>
+</dataStructure>
+</dataTemplate>
