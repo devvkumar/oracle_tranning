@@ -91,6 +91,20 @@ AS
 
     PROCEDURE VALIDATION_REQUIRED
     IS
+    
+        cursor cur_head
+        is
+        select *
+        from oe_order_header_dk
+        where request_id = gc_request_id;
+        
+        
+        cursor cur_line
+        is
+        select *
+        from oe_order_line_dk
+        where request_id = gc_request_id;
+    
     BEGIN
         
         /*
@@ -98,22 +112,43 @@ AS
                     SHIP_FROM_ORG_ID,CUSTOMER_NAME,INVOICE_TO_ORG_ID,OPERATION_CODE
         FROM OE_HEADERS_IFACE_ALL
         where orig_sys_document_ref = '%%';
+       */
+       
+--        ORG_ID  
+           UPDATE OE_ORDER_HEADER_DK
+           SET STATUS = 'E',
+                  ERROR_MESSAGE = ERROR_MESSAGE || 'ORG_ID IS NULL'
+            WHERE ORG_ID IS NULL;
+            
+--         ORDER TYPE
+            UPDATE OE_ORDER_HEADER_DK
+            SET STATUS = 'E',
+                   ERROR_MESSAGE = ERROR_MESSAGE || ' ORDER IS NULL'
+            WHERE ORDER_TYPE IS NULL;
+            
+--          SALESREP
+            UPDATE 
+       
+--        ORDER_SOURCE_ID
 
-        SELECT ORDER_SOURCE_ID,ORIG_SYS_DOCUMENT_REF,ORIG_SYS_LINE_REF,ORIG_SYS_SHIPMENT_REF,INVENTORY_ITEM_ID,LINK_TO_LINE_REF,REQUEST_DATE,
+--        ORIG_SYS_DOCUMENT_REF
+--        ORIG_SYS_LINE_REF,ORIG_SYS_SHIPMENT_REF,
+
+--        INVENTORY_ITEM_ID
+
+--        LINK_TO_LINE_REF
+
+--        REQUEST_DATE,
                     DELIVERY_LEAD_TIME,DELIVERY_ID,ORDERED_QUANTITY,ORDER_QUANTITY_UOM,SHIPPING_QUANTITY,PRICING_QUANTITY,PRICING_QUANTITY_UOM,
                     SOLD_FROM_ORG_ID,SOLD_TO_ORG_ID,INVOICE_TO_ORG_ID,SHIP_TO_ORG_ID,PRICE_LIST_ID,PAYMENT_TERM_ID
         FROM OE_LINES_IFACE_ALL
         WHERE orig_sys_document_ref = '%%';
-        */
+      
         
-        
-        select *
-        from dba_objects
-        where object_name like 'OE%%DK'
-            and object_type = 'TABLE';
-        
-        SELECT *
-        FROM OE_ORDER_HEADER_DK;
+        UPDATE OE_ORDER_LINE_DK
+        SET STATUS = 'E',
+               ERROR_MESSAGE = ERROR_MESSAGE || ' ORG_ID IS NULL'
+        WHERE ORG_ID IS NULL;
     
         FND_FILE.PUT_LINE(FND_FILE.LOG, 'VALIDATION_REQUIRED WORKING');
     EXCEPTION
@@ -131,8 +166,7 @@ AS
     END INSERT_DATA;
     
     
-    PROCEDURE MAIN (errbuf   out varchar2, 
-    retcode  out number)
+    PROCEDURE MAIN (errbuf   out varchar2, retcode  out number)
     IS
     BEGIN
         INSERT_DATA;

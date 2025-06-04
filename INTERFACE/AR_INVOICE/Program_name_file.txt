@@ -1,0 +1,97 @@
+-------------------------------- TABLE ----------------------------
+HEADER ==> AR_INV_HEADER_DK
+LINE ==> AR_INV_LINE_DK
+DISTRIBUTION ==> AR_INV_DIST_DK
+
+-------------------------------------------------------------------
+
+
+----------------------- RUNNING Interface -----------------------
+
+TRANSECTION NUMBER : 500935
+
+RA_CUSTOMER_TRX_PARTIAL_V
+
+----------------------- REQUEST GROUP -----------------------------
+
+REQEUST GROUP NAME : Receivables All
+RESPONSIBLITY NAME : Receivables, Vision Operations (USA)
+
+-------------------------------------------------------------------
+
+
+---------------------- EXECUTABLE PROGRAM -------------------------
+
+EXECUTABLE NAME : XXQGEN AR Invoice Interface DK
+EXECUTABLE SHORT NAME : XXQGEN_AR_INVOICE_INF_DK
+
+-------------------------------------------------------------------
+
+
+---------------------- CONCURRENT PROGRAM -------------------------
+
+CONCURRENT PROGRAM NAME : XXQGEN AR Invoice Interface DK
+CONCURRENT PROGRAM SHORT NAME : XXQGEN_AR_INVOICE_INF_DK
+
+--------------------------------------------------------------------
+
+
+----------------------- SQL LOADER ---------------------------------
+
+==> APLICATION NAME : Receivables
+
+==================== EXECUTABLE PROGRAM =================
+
+EXECUTABLE NAME : XXQGEN AR Invoice Data Loader DK
+EXECUTABLE SHORT NAME : XXQGEN_AR_INV_DATA_LOADER_DK
+APPLICATION : Receivables
+EXECUTION METHOD : HOST
+EXECUTION FILE NAME : AR_INV_DATA_LOADER
+
+=========================================================
+
+
+=================== CONCURRENT PROGRAM ==================
+
+CONCURRENT PROGRAM NAME : XXQGEN AR Invoice Data Loader
+CONCURRENT PROGRAM SHORT NAME : XXQGEN_AR_INV_DATA_LOADER
+
+=========================================================
+
+--------------------------------------------------------------------
+
+-------------------- FORM CREATION -----------------------
+
+==> APPLICATION NAME : Receivables
+==> RESPONSIBLITY NAME : Receivables, Vision Operations (USA)
+==> MENU NAME : AR_NAVIGATE_GUI
+
+========================= FORM ==========================
+
+FORM : AR_ERR_FORM
+APPLICATION : Receivables
+USER FORM NAME : AR_ERR_FORM
+
+=========================================================
+
+FORM EXECUTION : frmcmp_batch userid=apps/apps module=$AR_TOP/forms/US/AR_ERR_FORM.fmb output_file=$AR_TOP/forms/US/AR_ERR_FORM.fmx module_type=form batch=no compile_all=special
+
+-------------------------------------------------------------------
+
+-------------------------------------------------------------------
+
+===================== CONCURRENT PROGRAM ==========================
+
+CONCURRENT PROGRAM : XXQGEN Correct Invoice Error
+CONCURRENT PROGRAM SHORT NAME : XXQGEN_AR_INF_CORRECTION
+APLICATION NAME : Receivables
+
+===================================================================
+
+========================= EXECUTABLE ==============================
+
+EXECUTABLE NAME : XXQGEN Correct Invoice Error
+EXECUTABLE SHORT NAME : XXQGEN_AR_INF_CORRECTION
+EXECUTABLE FILE NAME : XXQGEN_AR_INF_CORRECTION.MAIN
+
+===================================================================

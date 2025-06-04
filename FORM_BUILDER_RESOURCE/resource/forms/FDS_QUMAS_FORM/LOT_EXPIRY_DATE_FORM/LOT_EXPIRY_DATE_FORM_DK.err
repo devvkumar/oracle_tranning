@@ -1,0 +1,4 @@
+FRM-30187: Size of CHAR column in record group must be between 1 and 2000.
+Record Group LOV144
+Form: LOT_EXPIRY_FORM
+FRM-30085: Unable to adjust form for output.

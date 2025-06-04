@@ -1,0 +1,2 @@
+﻿Business Process,Operating Unit,Customer#,Urgencies,Severities,Incident Status Code,Caller Type,SR Task Template,Planned Effort,Planned UOM,PA Task Name,PA Project Status,PA Default Responsibility,PA Default Template,SR Default Responsibilit,Project Initial
+Setup Business Process,NSORO_1802_OU1,1018,STANDARD,STANDARD,NEW,ORGANIZATION,MNS-VERIZON NED,1,HR,INVENTORY,APPROVED,NSORO US PA CONTROLLER,T-MNS-1806-NED,NSORO US FS WOBP MANAGER,MNS-ATC

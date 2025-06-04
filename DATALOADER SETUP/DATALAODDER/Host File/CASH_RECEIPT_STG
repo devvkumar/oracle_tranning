@@ -1,0 +1,299 @@
+################################################################################
+#  Owner                : 
+#  Program Type         : Shell Script
+#  Source  File         : Shell Script Executable File Name
+#  Conc Prog Short Name : 
+#
+# @(#)Description: 
+# @(#)   Description of module.  make cle and concise
+# @(#)   mutli-line descripion text	   
+#
+#  Pmeters: 
+#     gument 1 = datafile Name
+#
+#  Program Control:
+#    =========     ==========      		 ==============================
+#    Date          Author          		 Comments
+#    =========     ==========     		 ==============================
+#    
+#
+#  Pseudologic:
+#     explaining complex logic  multi-line text
+#
+################################################################################
+echo "Setting Pameters"
+#program=XXQGEN
+program=`echo $1 | cut -f1 -d " "`
+userpass=`echo $1 | cut -f2 -d '"'`
+#user_name=`echo $userpass | cut -f1 -d '/'`
+user_name=`echo $1 | cut -f4 -d '"'`
+#passwd=`echo $userpass | cut -f2 -d '/'`
+reqid=`echo $1 | cut -f2 -d " " | cut -f2 -d "="`
+usrid=`echo $1 | cut -f4 -d " " | cut -f2 -d "="`
+p_outfile_path="$APPLCSF/$APPLOUT/o$reqid.out"
+### PAMETER 1-5 SHOULD TAKE WITH "", SINCE THEY WOULD BE PASSIN-G AS GTS. TO PATTER
+#echo dol1= $1
+################################                   
+p1=`echo $1 | cut -f8 -d '"'`
+p2=`echo $1 | cut -f10 -d '"'`
+
+echo $p1
+echo $p2
+
+echo '                                            '
+echo '-----------------------------------------------------------------------'
+
+echo "Execution Date		          : "`date +"%m%d%y%H%M%S"`
+echo "Application Req id              	  : "$reqid
+echo "Application User id            	  : "$usrid
+echo "Application Username            	  : "$user_name
+
+echo '-----------------------------------------------------------------------'
+echo '     '
+
+
+#*************************************************************************
+#                              Main Program
+#*************************************************************************
+
+
+################################
+get_directory_name()
+{
+sqlplus -s $userpass <<EXIT
+set serverout on size 100000;
+set pages 0
+set feed off
+set verify off
+decle 
+l_err           vch2(100);
+l_name  vch2(100);
+Begin
+XXQGEN_common_utils_pkg.get_dir_name('$file_lookup_f',l_name,l_err);
+if l_err is not null then
+   dbms_output.put_line('XXQGEN_CASH_RCPT_ERROR:'||l_err);
+elsif l_name is null then
+   dbms_output.put_line('Unable to get $file_type name');
+else
+   dbms_output.put_line(l_name);
+end if;
+end;
+/
+EXIT
+}
+
+################################
+nil_report()
+{
+echo "No records to Process, exiting"
+echo `date +"%r %a %d %h %Y " `  >> $repfile
+echo "          ==============================================" >> $repfile
+echo "        No records to Process" >> $repfile
+}
+################################
+
+#SET HEADING FEEDBACK OFF PAGESIZE 0
+
+####################################
+update_status()
+{
+UPDATESTATUS=`sqlplus -s $userpass <<!
+set serverout on size 100000;
+set pages 0
+set feed off
+set verify off
+set HEADING off
+decle
+l_result boolean;
+l_session_id number;
+begin
+fnd_global.INITIALIZE(l_session_id, null, null, null,null, -1, null, null, null, null, $reqid, null,null,null,null,null,null,-1);
+l_result := fnd_concurrent.set_completion_status('WNING','Review log file for details.');
+commit;
+end;
+/
+exit;
+!`
+echo "$UPDATESTATUS"
+}
+
+###################################
+
+echo "FINDING THE DIRECTORIES"
+echo "------------------------------------------------------"
+echo " "
+################################
+## XXQGEN  Cash and Receipt inbound directory is defined as XXQGEN_CASH_RCPT_IN
+echo "Checking MNS  Cash and Receipt upload inbound Stt"
+file_type='inbound event directory'
+file_lookup='XXQGEN_CASH_RCPT_IN'
+file_lookup_f=$p1$file_lookup
+echo "Find $file_type name :lookup=$file_lookup_f"
+inbound_event_dir=`get_directory_name`
+if  echo $inbound_event_dir |grep "XXQGEN_CASH_RCPT_IN" > /dev/null
+then
+  echo "Error ... $inbound_event_dir "
+  exit 1
+fi
+echo inbound_event_dir=$inbound_event_dir
+################################
+## XXQGEN  Cash and Receipt error directory is defined as XXQGEN_CASH_RCPT_ERROR
+file_type='inbound event err directory'
+file_lookup='XXQGEN_CASH_RCPT_ERROR'
+file_lookup_f=$p1$file_lookup
+echo "Find $file_type name :lookup=$file_lookup_f"
+inbound_event_err_dir=`get_directory_name`
+if  echo $inbound_event_err_dir |grep "XXQGEN_CASH_RCPT_ERROR" > /dev/null
+then
+  echo "Error ... $inbound_event_err_dir "
+  exit 1
+fi
+echo inbound_event_err_dir=$inbound_event_err_dir
+################################
+## XXQGEN  Cash and Receipt chive directory is defined as XXQGEN_CASH_RCPT_CH
+file_type='inbound event chive directory'
+file_lookup='XXQGEN_CASH_RCPT_CH'
+file_lookup_f=$p1$file_lookup
+echo "Find $file_type name :lookup=$file_lookup_f"
+inbound_event_ch_dir=`get_directory_name`
+if  echo $inbound_event_ch_dir |grep "XXQGEN_CASH_RCPT_CH" > /dev/null
+then
+  echo "Error ... $inbound_event_ch_dir "
+  exit 1
+fi
+echo inbound_event_ch_dir=$inbound_event_ch_dir
+################################
+## XXQGEN  Cash and Receipt tempory directory is defined as XXQGEN_CASH_RCPT_TMP
+file_type='inbound event temp directory'
+file_lookup='XXQGEN_CASH_RCPT_TMP'
+file_lookup_f=$p1$file_lookup
+echo "Find $file_type name :lookup=$file_lookup_f"
+inbound_event_temp_dir=`get_directory_name`
+if  echo $inbound_event_temp_dir |grep "XXQGEN_CASH_RCPT_TMP" > /dev/null
+then
+  echo "Error ... $inbound_event_temp_dir "
+  exit 1
+fi
+echo inbound_event_temp_dir=$inbound_event_temp_dir
+################################
+## Getting XXQGEN  Cash Receipt Loader program control file
+ctl_file='XXQGEN'
+new_ctl_file=${ctl_file}_${reqid}
+echo "control file : $new_ctl_file"
+
+sed s/P_REQUEST_ID/$reqid/ $XXQGEN_TOP/bin/XXQGEN.ctl > $XXQGEN_TOP/bin/${new_ctl_file}.ctl
+sed -i s/P_SERVICE_LINE/$p1/ $XXQGEN_TOP/bin/${new_ctl_file}.ctl
+sed -i s/P_ORG_ID/$p2/ $XXQGEN_TOP/bin/${new_ctl_file}.ctl
+
+################################
+
+repfile=$XXQGEN_TOP/$APPLOUT/o$reqid.out
+#logfile=$XXQGEN_TOP/$APPLLOG/l$reqid.req
+logfile=$XXQGEN_TOP/$APPLLOG/l$reqid.log
+
+echo " "
+echo " "
+echo  "Loading Files  stted  at `date`. "
+echo " "
+echo " "
+echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo Processing XXQGEN  Cash Receipt Records
+echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cd $inbound_event_dir
+for file_name in *
+do  echo File=$file_name
+
+	if [ $file_name = "*" ]
+	then
+	   echo ***************************************************
+	   echo No files tranferred 
+	   echo ***************************************************
+#	   no_data_report = `nil_report`
+#           echo $no_data_report
+           nil_report
+	else
+		echo "File Processing Stted........."
+			file=`echo $file_name|cut -f1 -d '.'`
+			if [ ! -f $file.dat ]
+			then
+			   mv $file_name $file.dat
+			fi
+
+		x=`date +"%m%d%y%H%M%S"`
+
+		echo "Removing sqlload temp files"
+		rm -f $inbound_event_temp_dir/sqlload_1 $inbound_event_temp_dir/sqlload_2 
+		echo ""
+		sed -i s/P_FILE_NAME/$file_name/ $XXQGEN_TOP/bin/${new_ctl_file}.ctl
+		echo "Stt Loading the file........ "
+		sqlldr $userpass control=$XXQGEN_TOP/bin/${new_ctl_file}.ctl data=$file.dat log=$inbound_event_temp_dir/$file.log bad=$inbound_event_temp_dir/${file}_${reqid}.bad discd=$inbound_event_temp_dir/${file}_${reqid}.dis > $inbound_event_temp_dir/sqlload_1 > $inbound_event_temp_dir/sqlload_2 
+			if [ ! $file.dat = $file_name ] 
+			then
+			  mv $file.dat $file_name
+			fi
+
+
+			echo ""
+			cat $inbound_event_temp_dir/$file.log |grep "Total logical"
+			echo ""
+			echo ""
+			echo "File Loading Complete"
+			echo " "
+		bad_line_cnt=0	
+		dis_line_cnt=0
+		if [ -f $inbound_event_temp_dir/${file}_${reqid}.bad ]
+		then
+			bad_line_cnt=`wc -l $inbound_event_temp_dir/${file}_${reqid}.bad | cut -f1 -d' '`
+		fi
+
+		if [ -f $inbound_event_temp_dir/${file}_${reqid}.dis ]
+		then
+			dis_line_cnt=`wc -l $inbound_event_temp_dir/${file}_${reqid}.dis | cut -f1 -d' '` 
+		fi
+		if [ $bad_line_cnt -gt 0 ]
+		then
+		  update_status
+		  echo "the following records got rejected"
+		  echo "=============================================================================================================================================="
+		  cat $inbound_event_temp_dir/${file}_${reqid}.bad 
+		  echo "=============================================================================================================================================="
+		fi
+		if [ $dis_line_cnt -gt 0 ]
+		then
+		  update_status
+		  echo "the following records got discded"
+		  echo "=============================================================================================================================================="
+		  cat $inbound_event_temp_dir/${file}_${reqid}.dis 
+		  echo "=============================================================================================================================================="
+		fi
+
+		if grep -i error $inbound_event_temp_dir/sqlload_2 > /dev/null
+		then
+		     echo "********************************************************************************************************"
+		     echo "Error in Loading the file to the staging table for the file $file_name "
+		     echo "Error->$sqlload"
+		     echo "********************************************************************************************************"
+		     echo " "
+		     exit 1
+		elif [ -f $inbound_event_temp_dir/$file.err ]
+		then
+			echo "********************************************************************************************************"
+			echo " *******  Error while Loading to the staging table for the file $file_name, please see the error file ******* "
+			echo "********************************************************************************************************"
+			echo "Moving the file $file_name to the error directory "
+		      mv $inbound_event_dir/$file_name $inbound_event_err_dir/$file_name.$x
+		fi
+		echo "Successfully loaded records from datafile $file_name"
+
+		echo "Moving data file $file_name to the XXQGEN  Cash Receipt chive Directory" 
+		mv $inbound_event_dir/$file_name $inbound_event_ch_dir/$file_name.$x
+		echo "File $file_name moved from $inbound_event_dir/ to $inbound_event_ch_dir/"
+	fi
+done
+if [ -f $XXQGEN_TOP/bin/${new_ctl_file}.ctl ]
+then
+	rm -f $XXQGEN_TOP/bin/${new_ctl_file}.ctl
+fi	
+echo "XXQGEN  Cash and Receipt uploader Program ended successfully"

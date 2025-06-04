@@ -1,0 +1,90 @@
+################################################################################
+#  Owner                : DKUMAR
+#  Program Type         : Shell Script
+#  Source File          : Shell Script Executable File Name
+#  Conc Prog Short Name : XXQGEN_AR_INV_DATA_LOADER
+#
+#  Description:
+#    This script is used to upload AR Invoice data using SQL*Loader. 
+#    It checks required directories, creates them if not available, 
+#    sets permissions, and processes .csv files using a given control file.
+#
+#  Parameters:
+#    Argument 1 = CREDENTIAL (e.g., apps/apps)
+#    Argument 2 = USER_ID
+#    Argument 3 = USER_NAME
+#    Argument 4 = CONC_ID
+#    Argument 5 = FILE_NAME (Control file name without extension)
+#
+#  Program Control:
+#  =====================================================================
+#  Date          Author        Comments
+#  =====================================================================
+#  16/05/2025    DKUMAR        First Version
+#  17/05/2025	 DKUMAR		   Adding SQL*Loader
+################################################################################
+#
+echo "Setting Parameters..."
+CREDENTIAL="$1"
+USER_ID="$2"
+USER_NAME="$3"
+CONC_ID="$4"
+PARAMETER="$5"
+FILE_NAME="$5.ctl"
+#
+echo "CREDENTIAL: $CREDENTIAL"
+echo "USER_ID: $USER_ID"
+echo "USERNAME: $USER_NAME"
+echo "CONCURRENT REQUEST ID: $CONC_ID"
+echo "FILE_NAME: ${FILE_NAME}"
+# Define base directories
+echo "Define base directories"
+#
+TIMESTAMP=$(echo "$(date '+%Y-%m-%d_%H-%M-%S')" | tr -d '\r')
+#TIMESTAMP="$(date '+%Y-%m-%d_%H-%M-%S')"
+echo $TIMESTAMP | tr -d '\r'
+#
+INPUT_DIR="/u01/install/VISION/fs1/EBSapps/appl/ar/12.0.0/bin"
+CTL_FILE="/u01/install/VISION/fs1/EBSapps/appl/ar/12.0.0/bin/$5.ctl"
+LOG_FILE="/u01/install/VISION/fs1/EBSapps/appl/ar/ar_invoice_dk/log/$5.log"
+BAD_FILE="/u01/install/VISION/fs1/EBSapps/appl/ar/ar_invoice_dk/bad/$5.bad"
+#
+#
+# Creating Directory if not created
+# AR_INVOICE_DIR
+#mkdir -p "$AR_INVOICE_DIR"
+#chmod 777 "$AR_INVOICE_DIR"
+#mkdir $AR_INVOICE_DIR		# Creating Directory
+#chmod 777 $AR_INVOICE_DIR	# Giving Permission
+# LOG_DIR
+#mkdir $LOG_DIR				# Creating "log" Directory in ar_invoice_dk
+#chmod 777 $LOG_DIR			# Giving Permission
+#echo $LOG_DIR
+#
+# BAD_DIR
+#mkdir $BAD_DIR
+#chmod 777 $BAD_DIR
+#echo $BAD_DIR
+#
+# Timestamp for log/bad files
+#echo "Timestamp for log/bad files"
+#
+#
+#echo "Define base directories and Starting SQL*Loader for files in: $INPUT_DIR"
+echo "Control File: $CTL_FILE"
+echo "Log File: $LOG_FILE"
+echo "Bad File: $BAD_FILE"
+FILE_PATH="/u01/install/VISION/fs1/EBSapps/appl/ar/12.0.0/bin"
+CTL_FILE="/u01/install/VISION/fs1/EBSapps/appl/ar/12.0.0/bin/LOAD_DATA.ctl"
+#
+# Process all .csv files in the input directory
+for file in /u01/install/VISION/fs1/EBSapps/appl/ar/12.0.0/bin/*.csv;do
+sqlldr userid="apps/apps" control="$CTL_FILE" data="$file" 
+done
+#
+#for file in */u01/install/VISION/fs1/EBSapps/appl/ar/12.0.0/bin/.csv; do 
+# echo "Processing file: $file"
+#  sqlldr userid="$CREDENTIAL" control="$CTL_FILE" data="$file" log="$LOG_FILE" bad="$BAD_FILE"
+#done
+echo "Script execution finished at: $(date)"
+echo "XXQGEN AR Invoice Uploader Program completed successfully."
