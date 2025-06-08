@@ -1,0 +1,56 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_HEAD_LINE_TEST_DK" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN_1">
+<![CDATA[ 
+SELECT 
+            PRHA.REQUISITION_HEADER_ID HEADER_ID,
+            PRHA.PREPARER_ID,
+            PRHA.SEGMENT1,
+            PRHA.CREATION_DATE,
+            PRHA.AUTHORIZATION_STATUS
+FROM 
+            PO_REQUISITION_HEADERS_ALL PRHA
+WHERE
+            1=1
+]]>
+</sqlStatement>
+<sqlStatement name="Q_MAIN_2">
+<![CDATA[ 
+SELECT 
+            PRLA.LINE_NUM,
+            PRLA.ITEM_DESCRIPTION,
+            PRLA.UNIT_PRICE,
+            PRLA.QUANTITY,
+            PRLA.UNIT_PRICE * PRLA.QUANTITY AMOUNT
+FROM 
+            PO_REQUISITION_LINES_ALL PRLA
+WHERE
+            1=1
+AND      PRHA.REQUISITION_HEADER_ID = :HEADER_ID
+]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN_1">
+			<element name="REQUISITION_HEADER_ID" dataType="varchar2" value="REQUISITION_HEADER_ID"/>
+			<element name="PREPARER_ID" dataType="varchar2" value="PREPARER_ID"/>
+			<element name="SEGMENT1" dataType="varchar2" value="SEGMENT1"/>
+			<element name="CREATION_DATE" dataType="varchar2" value="CREATION_DATE"/>--
+			<element name="AUTHORIZATION_STATUS" dataType="varchar2" value="AUTHORIZATION_STATUS"/>
+			<group name="G_MAIN" dataType="varchar2" source="Q_MAIN_1">
+				<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+				<element name="ITEM_DESCRIPTION" dataType="varchar2" value="ITEM_DESCRIPTION"/>
+				<element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+				<element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+				<element name="AMOUNT" dataType="varchar2" value="AMOUNT"/>
+			</group>
+		</group>
+	</dataStructure>
+</dataTemplate>

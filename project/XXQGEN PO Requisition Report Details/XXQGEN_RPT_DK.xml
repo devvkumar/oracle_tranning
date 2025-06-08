@@ -1,0 +1,35 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_RPT_DK" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[
+  select fu.USER_NAME, 
+		 papf.FULL_NAME, 
+		 papf.SEX, 
+		 papf.NATIONALITY, 
+		 papf.START_DATE, 
+		 fu.END_DATE
+  from 	 fnd_user fu, 
+		 per_all_people_f papf
+  where  fu.employee_id = papf.person_id
+  and    fu.user_name = 'OPERATIONS' 
+]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+			<element name="USER_NAME" dataType="varchar2" value="USER_NAME"/>
+			<element name="FULL_NAME" dataType="varchar2" value="FULL_NAME"/>
+			<element name="GENDER" dataType="varchar2" value="SEX"/>
+			<element name="NATIONALITY" dataType="varchar2" value="NATIONALITY"/>
+			<element name="START_DATE" dataType="varchar2" value="START_DATE"/>
+			<element name="END_DATE" dataType="varchar2" value="END_date"/>
+		</group>
+	</dataStructure>
+</dataTemplate>

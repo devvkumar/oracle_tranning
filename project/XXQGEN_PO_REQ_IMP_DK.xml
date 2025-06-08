@@ -1,0 +1,121 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_PO_REQ_IMP_DK" version="1.0">
+    <properties>
+        <property name="xml_tag_case" value="upper"/>
+    </properties>
+    <parameters>
+    </parameters>
+    <dataQuery>
+        <sqlStatement name="Q_MAIN_P">
+            <![CDATA[
+                SELECT  PRHA.OPERATING_UNIT, 
+                        PRHA.HEADER_ID, PRHA.REQ_NUMBER, 
+                        PRHA.TYPE, 
+                        PRHA.PREPARER, 
+                        PRHA.DESCRIPTION,
+                        PRHA.AUTH_STATUS,
+                        PRLA.LINE_NUM, 
+                        PRLA.ITEM, PRLA.ITEM_ID, 
+                        PRLA.REV, 
+                        PRLA.CATAGORY, 
+                        PRLA.CATEGORY_ID,
+                        PRLA.DESCREPTION, 
+                        PRLA.UOM, 
+                        PRLA.QUANTITY, 
+                        PRLA.PRICE, 
+                        PRLA.NEED_BY_date, 
+                        PRLA.AMOUNT, PRLA.CHARGE_ACCOUNT,
+                        PRLA.DESTINATION_TYPE, 
+                        PRLA.REQUESTER, PRLA.REQUESTER_ID, PRLA.ORGANIZATION, PRLA.ORG_ID,
+                        PRLA.LOCATION, 
+                        PRLA.LOCATION_ID, 
+                        PRLA.SOURCE, 
+                        PRLA.SUPPLIER, 
+                        PRLA.SITE
+                FROM XXQGEN_PO_REQ_HDR_STG_DK PRHA,
+                     XXQGEN_PO_REQ_LINE_STG_DK PRLA
+                WHERE 1=1
+                    AND PRHA.HEADER_ID = PRLA.HEADER_ID
+                    AND PRHA.STATUS = 'P'
+					AND PRHA.REQUEST_ID = &GC_REQUEST_ID
+            ]]>
+        </sqlStatement>
+
+        <sqlStatement name="Q_MAIN_E">
+            <![CDATA[
+                SELECT  PRHA.OPERATING_UNIT, 
+                        PRHA.HEADER_ID, PRHA.REQ_NUMBER, 
+                        PRHA.TYPE, 
+                        PRHA.PREPARER, 
+                        PRHA.DESCRIPTION,
+                        PRHA.AUTH_STATUS,
+                        PRLA.LINE_NUM, 
+                        PRLA.ITEM, PRLA.ITEM_ID, 
+                        PRLA.REV, 
+                        PRLA.CATAGORY, 
+                        PRLA.CATEGORY_ID,
+                        PRLA.DESCREPTION, 
+                        PRLA.UOM, 
+                        PRLA.QUANTITY, 
+                        PRLA.PRICE, 
+                        PRLA.NEED_BY_date, 
+                        PRLA.AMOUNT, PRLA.CHARGE_ACCOUNT,
+                        PRLA.DESTINATION_TYPE, 
+                        PRLA.REQUESTER, PRLA.REQUESTER_ID, PRLA.ORGANIZATION, PRLA.ORG_ID,
+                        PRLA.LOCATION, 
+                        PRLA.LOCATION_ID, 
+                        PRLA.SOURCE, 
+                        PRLA.SUPPLIER, 
+                        PRLA.SITE
+                FROM XXQGEN_PO_REQ_HDR_STG_DK PRHA,
+                     XXQGEN_PO_REQ_LINE_STG_DK PRLA
+                WHERE 1=1
+                    AND PRHA.HEADER_ID = PRLA.HEADER_ID
+                    AND PRHA.STATUS = 'E'
+					AND PRHA.REQUEST_ID = &GC_REQUEST_ID
+            ]]>
+        </sqlStatement>
+    </dataQuery>
+		
+		<dataTrigger name="beforeReportTrigger" source="XXQGEN_PO_REQ_IMP_DK.beforereport"/>
+    <dataStructure>
+	<element name="REQ_ID" dataType="number" value="XXQGEN_PO_REQ_IMP_DK.gc_request_id"/>
+        <!-- Group for Status P -->
+        <group name="G_MAIN_P" dataType="varchar2" source="Q_MAIN_P">
+            <element name="INVOICE_NUM" dataType="varchar2" value="invoice_num"/>
+            <element name="VENDOR_NAME" dataType="varchar2" value="vendor_name"/>
+            <element name="VENDOR_SITE_CODE" dataType="varchar2" value="vendor_site_code"/>
+            <element name="SHIP_TO_LOCATION_CODE" dataType="varchar2" value="ship_to_location_code"/>
+            <element name="BILL_TO_LOCATION_CODE" dataType="varchar2" value="bill_to_location_code"/>
+            <group name="G_MAIN_2_P" dataType="varchar2" source="Q_MAIN_P">
+                <element name="LINE_NUM" dataType="varchar2" value="line_num"/>
+                <element name="LINE_TYPE" dataType="varchar2" value="line_type"/>
+                <element name="ITEM" dataType="varchar2" value="item"/>
+                <element name="ITEM_DESCRIPTION" dataType="varchar2" value="item_description"/>
+                <element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+                <element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+                <element name="AMOUNT" dataType="varchar2" value="Amount"/>
+            </group>
+        </group>
+
+        <!-- Group for Status E -->
+        <group name="G_MAIN_E" dataType="varchar2" source="Q_MAIN_E">
+            <element name="INVOICE_NUM" dataType="varchar2" value="invoice_num"/>
+            <element name="VENDOR_NAME" dataType="varchar2" value="vendor_name"/>
+            <element name="VENDOR_SITE_CODE" dataType="varchar2" value="vendor_site_code"/>
+            <element name="SHIP_TO_LOCATION_CODE" dataType="varchar2" value="ship_to_location_code"/>
+            <element name="BILL_TO_LOCATION_CODE" dataType="varchar2" value="bill_to_location_code"/>
+            <group name="G_MAIN_2_E" dataType="varchar2" source="Q_MAIN_E">
+                <element name="LINE_NUM" dataType="varchar2" value="line_num"/>
+                <element name="LINE_TYPE" dataType="varchar2" value="line_type"/>
+                <element name="ITEM" dataType="varchar2" value="item"/>
+                <element name="ITEM_DESCRIPTION" dataType="varchar2" value="item_description"/>
+                <element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+                <element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+                <element name="AMOUNT" dataType="varchar2" value="Amount"/>
+            </group>
+        </group>
+    </dataStructure>
+	<dataTrigger name="afterReportTrigger" source="XXQGEN_PO_REQ_IMP_DK.afterreport"/>
+</dataTemplate>

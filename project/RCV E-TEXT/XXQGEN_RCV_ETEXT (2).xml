@@ -1,0 +1,93 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="xxqgen_po_xml_dk" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+<parameter name="P_HEADER_ID" dataType="number"/>
+<parameter name="P_LINE_ID" dataType="number"/>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[ 
+SELECT mil.concatenated_segments storage_location,
+                   rsh.receipt_num,
+                   assa.country,
+                   assa.fob_lookup_code incoterms,
+                   mmt.currency_code,
+                   (SELECT ieb.bank_account_num
+                      FROM IBY_EXTERNAL_PAYEES_ALL iep,
+                           IBY_PMT_INSTR_USES_ALL ipi,
+                           IBY_EXT_BANK_ACCOUNTS ieb
+                     WHERE 1=1
+                       AND iep.ext_payee_id = ipi.ext_pmt_party_id(+)
+                       AND ipi.instrument_id = ieb.ext_bank_account_id
+                       AND ipi.instrument_type = 'BANKACCOUNT'
+                       AND TRUNC(SYSDATE) < TRUNC(NVL(ipi.end_date, SYSDATE + 1))
+                       AND iep.payment_function = 'PAYABLES_DISB'
+                       AND iep.supplier_site_id = assa.vendor_site_id
+                       AND rownum <= 1) account_number,
+                   msib.segment1 item,
+                   mmt.TRANSACTION_QUANTITY qty,
+                   mmt.TRANSACTION_UOM uom,
+                   NULL comodity_code,
+                   msib.description,
+                   assa.country,
+                   msib.unit_weight,
+                   (mmt.Transaction_quantity * mmt.transaction_cost) net_value,
+                   rt.quantity,
+                   pha.segment1 po_number,
+                   pha.creation_date gl_date
+            -- ,rt.*
+            FROM rcv_shipment_headers rsh,
+                 rcv_shipment_lines rsl,
+                 rcv_transactions rt,
+                 po_headers_all pha,
+                 mtl_material_transactions mmt,
+                 mtl_item_locations_kfv mil,
+                 ap_supplier_sites_all assa,
+                 mtl_system_items_b msib  
+            WHERE rsh.shipment_header_id = rsl.shipment_header_id
+              AND rsl.shipment_header_id = rt.shipment_header_id
+              AND rsl.SHIPMENT_LINE_ID = rt.SHIPMENT_LINE_ID
+              AND rt.po_header_id = pha.po_header_id
+              AND rt.transaction_id = mmt.RCV_TRANSACTION_ID
+              AND mmt.locator_id = mil.inventory_location_id
+              AND mmt.inventory_item_id = msib.inventory_item_id
+              AND mmt.organization_id = msib.organization_id
+              AND rt.vendor_site_id = assa.vendor_site_id
+            -- AND transaction_source_id = 103
+            -- AND transaction_type_id = 18
+            AND rt.transaction_type = 'DELIVER'
+            AND rsh.receipt_num = :P_RECEIPT_NUM
+]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+			<element name="LOCATION_ID" dataType="varchar2" value="storage_location"/>
+			<element name="RECEIPT_NUM" dataType="varchar2" value="receipt_num"/>
+			<element name="COUNTRY" dataType="varchar2" value="country"/>
+			<element name="COUNTRY" dataType="varchar2" value="country"/>--
+			<element name="INCOTERMS" dataType="varchar2" value="incoterms"/>
+			<element name="CURRENCY_CODE" dataType="varchar2" value="currency_code"/>
+			<group name="G_MAIN2" dataType="varchar2" source="Q_MAIN">
+				<element name="ACCOUNT_NUMBER" dataType="varchar2" value="account_number"/>
+				<group name="G_MAIN3" dataType="varchar2" source="Q_MAIN">
+					<element name="SEGMENT1" dataType="varchar2" value="item"/>
+					<element name="TRANCTION_QTY" dataType="varchar2" value="qty"/>
+					<element name="TRANSACTION_UOM" dataType="varchar2" value="uom"/>
+					<element name="COMODITY_CODE" dataType="varchar2" value="comodity_code"/>
+					<element name="DESCRIPTION" dataType="varchar2" value="description"/>
+					<element name="COUNTRY" dataType="varchar2" value="country"/>
+					<element name="UNIT_WEIGHT" dataType="varchar2" value="unit_weight"/>
+					<element name="NET_VALUE" dataType="varchar2" value="net_value"/>
+					<element name="QUANTITY" dataType="varchar2" value="quantity"/>
+					<element name="PO_NUMBER" dataType="varchar2" value="po_number"/>
+					<element name="GL_DATE" dataType="varchar2" value="gl_date"/>
+				</group>
+			</group>
+		</group>
+	</dataStructure>
+</dataTemplate>

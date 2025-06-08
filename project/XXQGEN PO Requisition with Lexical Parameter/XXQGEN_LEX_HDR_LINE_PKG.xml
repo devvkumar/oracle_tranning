@@ -1,0 +1,105 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<dataTemplate name="XXQGEN_LEX_HDR_LINE_PKG" 
+      defaultPackage="XXQGEN_LEX_HDR_LINE_PKG" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+	<property name="debug_mode" value="on" />
+</properties>
+
+<parameters>
+	<parameter name="P_HEADER" dataType="character"/>
+	<parameter name="P_ORG_ID" dataType="character"/>
+	<parameter name="P_ITEM_ID" dataType="character"/>
+ </parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[ 
+SELECT
+    prla.requisition_LINE_id,
+    prla.line_type_id,
+    PRLA.LINE_NUM,
+    mc.segment1 || '.' || mc.segment2 AS category,
+    prla.unit_price,
+    prla.quantity,
+    prla.unit_price * prla.quantity AS amount,
+    prla.unit_meas_lookup_code,
+    ood.organization_id,
+    ood.organization_code,
+    ood.organization_name,
+    prla.need_by_date,
+    prla.to_person_id,
+    papf.full_name preparer,
+    prla.deliver_to_location_id,
+    hl.location_code,
+    hl.description,
+    hl.ship_to_location_id,
+    hl.inventory_organization_id,
+    plt.line_type,
+    msi.segment1 AS item,
+    msi.description,
+    gcc.segment1 || '-' || gcc.segment2 || '-' || gcc.segment3 || '-' || gcc.segment4 AS CHARGE_ACCOUNT
+FROM
+    po_requisition_lines_all prla,
+    mtl_system_items_b msi,
+    org_organization_definitions ood,
+    mtl_categories mc,
+    per_all_people_f papf,
+    hr_locations hl,
+    po_line_types plt,
+    PO_REQ_DISTRIBUTIONS_ALL prda,
+    gl_code_combinations gcc,
+    po_requisition_headers_all prha
+WHERE
+    prla.DESTINATION_ORGANIZATION_ID = ood.organization_id
+    AND prla.DESTINATION_ORGANIZATION_ID = msi.organization_id
+    AND prla.item_id = msi.inventory_item_id
+    AND mc.category_id = prla.category_id
+    AND prla.to_person_id = papf.person_id
+    AND prla.deliver_to_location_id = hl.location_id
+    AND prla.line_type_id = plt.line_type_id
+    AND prla.requisition_LINE_id = prda.requisition_LINE_id
+    AND prda.code_combination_id = gcc.code_combination_id
+    AND prla.requisition_header_id = prha.requisition_header_id
+    AND (prla.requisition_header_id = :P_REQ_HDR_ID OR :P_REQ_HDR_ID IS NULL)
+    AND prla.org_id = :P_ORG_ID
+    AND (prla.item_id = :P_ITEM_ID OR :P_ITEM_ID IS NULL)
+	 &LP_ITEM
+
+
+]]>
+</sqlStatement>
+</dataQuery>
+<dataTrigger name="afterReportTrigger" source="XXQGEN_LEX_HDR_LINE_PKG.afterreport"/>
+<dataTrigger name="beforeReportTrigger" source="XXQGEN_LEX_HDR_LINE_PKG.beforereport"/>
+
+<element name="P_REQ_HDR_ID1" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG.P_REQ_HDR_ID"/>
+<element name="P_ORG_ID1" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG.P_ORG_ID"/> 
+<dataStructure>
+
+	<element name="USER_NAME" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG.gc_user_name"/>	
+	<element name="REQUEST_ID" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG.gn_request_id"/>
+	<element name="SUBMITION_DATE" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG.gd_date"/>
+	<element name="RESP_NAME" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG.gc_resp_name"/>
+	<element name="USER_NAME" dataType="number" value="XXQGEN_LEX_HDR_LINE_PKG.LP_ITEM"/>	
+
+<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+	<element name="REQNUMBER" dataType="NUMBER" value="SEGMENT1"/>
+	<element name="ORG_ID" dataType="varchar2" value="ORG_ID"/>
+	<element name="name" dataType="varchar2" value="name"/>
+	<element name="preparer" dataType="varchar2" value="preparer"/>
+	<element name="req_hdr_id" dataType="varchar2" value="req_hdr_id"/>
+	<element name="AUTHORIZATION_STATUS" dataType="varchar2" value="AUTHORIZATION_STATUS"/>
+	<element name="requisition_LINE_id" dataType="varchar2" value="requisition_LINE_id"/>
+
+	<group name="G_MAIN2" dataType="varchar2" source="Q_MAIN">
+		<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+		<element name="category" dataType="varchar2" value="category"/>
+		<element name="ITEM" dataType="varchar2" value="item"/>
+		<element name="quantity" dataType="varchar2" value="quantity"/>
+		<element name="unit_price" dataType="varchar2" value="unit_price"/>
+		<element name="amount" dataType="varchar2" value="amount"/>
+		<element name="CHARGE_ACCOUNT" dataType="varchar2" value="CHARGE_ACCOUNT"/>
+	</group>	
+</group>
+</dataStructure>
+</dataTemplate>

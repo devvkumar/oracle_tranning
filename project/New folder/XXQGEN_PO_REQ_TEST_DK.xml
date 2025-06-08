@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataTemplate name="XXQGEN_PO_REQ_TEST_DK" defaultPackage="XXQGEN_WITH_WITHOUT_REQ_DK" version="1.0" >
+  <properties>
+    <property name="xml_tag_case" value="upper"/>
+    <property name="debug_mode" value="on" />
+  </properties>
+  <parameters>
+    <parameter name="P_ORG_ID" dataType="character"/>
+    <parameter name="P_REQ_TYPE" dataType="character"/>
+  </parameters>
+    
+  <dataQuery>
+    <sqlStatement name="Q_MAIN">
+      <![CDATA[
+       SELECT SEGMENT1,
+			  PO_HEADER_ID
+			  LINE_NUM,
+              UNIT_PRICE,
+              QUANTITY,
+              AMOUNT
+		FROM WITH_WITHOUT_REQ_DK
+      ]]>
+    </sqlStatement>
+  </dataQuery>
+	  <dataStructure>
+		<dataTrigger name="beforeReportTrigger" source="XXQGEN_WITH_WITHOUT_REQ_DK.beforereport"/>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+		  <element name="PO_NUMBER" dataType="NUMBER" value="PO_DISTRIBUTION_ID"/>
+		  <element name="HDR_ID" dataType="NUMBER" value="CREATED_BY"/>
+		  <element name="LINE_NUM" dataType="NUMBER" value="LINE_NUM"/>
+		  <element name="UNIT_PRICE" dataType="NUMBER" value="UNIT_PRICE"/>
+		  <element name="AMOUNT" dataType="NUMBER" value="AMOUNT"/>
+		</group>
+		<dataTrigger name="afterReportTrigger" source="XXQGEN_WITH_WITHOUT_REQ_DK.afterreport"/>
+	  </dataStructure>
+</dataTemplate>

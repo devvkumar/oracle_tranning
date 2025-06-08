@@ -1,0 +1,47 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_USR_EMP_XML_RPT_DK" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[
+  SELECT 
+    fu.user_id,
+    fu.user_name,
+    TO_CHAR(FU.START_DATE, 'DD MON RRRR')USER_START_DATE,
+    TO_CHAR(FU.END_DATE, 'DD MON RRRR') USER_END_DATE,
+    papf.person_id,
+    papf.full_name,
+    PAPF.EMAIL_ADDRESS,
+    PAPF.EMPLOYEE_NUMBER,
+    TO_CHAR(PAPF.EFFECTIVE_START_DATE, 'DD MON RRRR')EMP_START_DATE,
+    TO_CHAR(PAPF.EFFECTIVE_END_DATE, 'DD MON RRRR') EMP_END_DATE
+FROM 
+    fnd_user fu,
+    per_all_people_f papf
+WHERE
+     fu.EMPLOYEE_id = papf.person_id
+]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+			<element name="U_ID" dataType="varchar2" value="user_id"/>
+			<element name="U_NAME" dataType="varchar2" value="user_name"/>
+			<element name="U_S_D" dataType="varchar2" value="USER_START_DATE"/>
+			<element name="U_E_D" dataType="varchar2" value="USER_END_DATE"/>
+			<group name="G_MAIN_E" dataType="varchar2" source="Q_MAIN">
+				<element name="P_ID" dataType="varchar2" value="person_id"/>
+				<element name="P_FNAME" dataType="varchar2" value="full_name"/>
+				<element name="P_MAIL" dataType="varchar2" value="EMAIL_ADDRESS"/>
+				<element name="P_EMPNO" dataType="varchar2" value="EMPLOYEE_NUMBER"/>
+				<element name="P_S_D" dataType="varchar2" value="EMP_START_DATE"/>
+				<element name="P_E_D" dataType="varchar2" value="EMP_END_DATE"/>
+			</group>
+		</group>
+	</dataStructure>
+</dataTemplate>

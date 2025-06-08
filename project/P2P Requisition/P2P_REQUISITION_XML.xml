@@ -1,0 +1,115 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_TEST_DK02" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[
+  select prha.requisition_header_id,
+         prha.preparer_id,
+         PAPFPRE.FULL_NAME PREPARER_FULL_NAME,
+         lub.user_name LAST_UPDATED_BY,
+         cb.user_name CREATED_BY,
+         PRHA.ORG_ID,
+         HOU.NAME ORGANIZATION_NAME,
+         PRHA.TYPE_LOOKUP_CODE,
+         PRHA.AUTHORIZATION_STATUS AUTH_STATUS,
+         PLC1.DESCRIPTION,
+         PLC1.DISPLAYED_FIELD,
+         PRHA.DESCRIPTION HEADER_DESC,
+         PRHA.ENABLED_FLAG,
+         PRHA.SUMMARY_FLAG,
+         PRHA.SEGMENT1,
+         PRLA.REQUISITION_LINE_ID,
+         PRLA.CATEGORY_ID,
+		 PRLA.PURCHASE_BASIS,
+         MC.SEGMENT1 || ' ' || MC.SEGMENT2 CATEGORY_NAME,
+         PRLA.QUANTITY,
+         PRLA.UNIT_PRICE,
+         PRLA.QUANTITY * PRLA.UNIT_PRICE AMOUNT,
+         PRLA.TO_PERSON_ID,
+         PAPF.FULL_NAME REQ_PERSON,
+         MSIB.SEGMENT1 || ' ' || MSIB.DESCRIPTION ITEM_ID,
+         PRLA.ITEM_DESCRIPTION,
+		 PRLA.DESTINATION_TYPE_CODE,
+         PRLA.NEED_BY_DATE,
+         PRLA.DELIVER_TO_LOCATION_ID,
+         HLA.ADDRESS_LINE_1,
+         HLA.DESCRIPTION LOC_DESC,
+         HLA.POSTAL_CODE,
+         PRLA.LINE_NUM,
+         PRDA.DISTRIBUTION_ID,
+         PRDA.REQUISITION_LINE_ID,
+         PRDA.SET_OF_BOOKS_ID,
+         PRDA.DISTRIBUTION_NUM,
+         PRLA.REQUEST_ID,
+         gcc.ACCOUNT_TYPE,
+         gcc.ENABLED_FLAG,
+         gcc.SUMMARY_FLAG,
+         gcc.COMPANY_COST_CENTER_ORG_ID,
+		 GCC.SEGMENT1||'-'||GCC.SEGMENT2||'-'||GCC.SEGMENT3||'-'||GCC.SEGMENT4||'-'||GCC.SEGMENT5 ACCOUNT_DETAIL
+from 
+        po_requisition_headers_all prha,
+        po_requisition_lines_all prla,
+        po_req_distributions_all prda,
+        PER_ALL_PEOPLE_F PAPFPRE,
+        fnd_user lub,
+        fnd_user cb,
+        HR_LOCATIONS_ALL HLA,
+        PER_ALL_PEOPLE_F PAPF,
+        HR_ORGANIZATION_UNITS HOU,
+        MTL_CATEGORIES MC,
+        MTL_SYSTEM_ITEMS_B MSIB,
+        ORG_ORGANIZATION_DEFINITIONS OOD,
+        GL_CODE_COMBINATIONS gcc,
+        PO_LOOKUP_CODES PLC1
+ --       PER_ALL_PEOPLE_F PAPFREQ
+where
+        1=1
+and   prha.requisition_header_id = prla.requisition_header_id
+and   prha.segment1 = '14438'
+AND  PAPFPRE.PERSON_ID = PRHA.PREPARER_ID
+and   prla.last_updated_by = lub.USER_id
+and   prla.created_by = cb.USER_id
+and   prda.requisition_line_id = prla.requisition_line_id
+AND  PRLA.TO_PERSON_ID = PAPF.PERSON_ID
+AND  HLA.LOCATION_ID = PRLA.DELIVER_TO_LOCATION_ID
+AND  HOU.ORGANIZATION_ID = PRHA.ORG_ID
+AND  PRHA.AUTHORIZATION_STATUS = PLC1.LOOKUP_CODE
+AND  PLC1.LOOKUP_TYPE ='AUTHORIZATION STATUS'
+AND  PRLA.CATEGORY_ID = MC.CATEGORY_ID
+--AND  HLA.PERSON_ID = PRLA.DELIVER_TO_LOCATION_ID
+AND  MSIB.INVENTORY_ITEM_ID = PRLA.ITEM_ID
+AND  MSIB.ORGANIZATION_ID = OOD.ORGANIZATION_ID
+AND  OOD.ORGANIZATION_ID = PRLA.ORG_ID
+and   prda.code_combination_id = gcc.code_combination_id
+]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+			<element name="ORG_NAME" dataType="varchar2" value="ORGANIZATION_NAME"/>
+			<element name="NUMBER" dataType="varchar2" value="SEGMENT1"/>
+			<element name="PREPARER_FULL_NAME" dataType="varchar2" value="PREPARER_FULL_NAME"/>
+			<element name="HEADER_DESC" dataType="varchar2" value="HEADER_DESC"/>--
+			<element name="TYPE" dataType="varchar2" value="TYPE_LOOKUP_CODE"/>
+			<element name="AUTH_STATUS" dataType="varchar2" value="AUTH_STATUS"/>
+			<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+			<element name="PURCHASE_BASIS" dataType="varchar2" value="PURCHASE_BASIS"/>
+			<element name="ACCOUNT_DETAIL" dataType="varchar2" value="ACCOUNT_DETAIL"/>
+			<element name="CATEGORY_NAME" dataType="varchar2" value="CATEGORY_NAME"/>
+			<element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+			<element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+			<element name="AMOUNT" dataType="varchar2" value="AMOUNT"/>
+			<element name="DEST_TYPE_CODE" dataType="varchar2" value="DESTINATION_TYPE_CODE"/>
+			<element name="REQ_PERSON" dataType="varchar2" value="REQ_PERSON"/>
+			<element name="ORGANIZATION_NAME" dataType="varchar2" value="ORGANIZATION_NAME"/>
+			<element name="LOC_DESC" dataType="varchar2" value="LOC_DESC"/>
+			
+		</group>
+	</dataStructure>
+</dataTemplate>

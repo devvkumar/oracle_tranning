@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataTemplate name="XXQGEN_PO_DEPN_XML_DK" 
+      defaultPackage="xxqgen_metadata_po_depn_dk" version="1.0">
+    <properties>
+        <property name="xml_tag_case" value="upper"/>
+    </properties>
+    <parameters>
+        <parameter name="P_REQ_HDR_ID" dataType="CHARACTER"/>
+        <parameter name="P_ORG_ID" dataType="CHARACTER"/>
+        <parameter name="P_REQ_TYPE" dataType="CHARACTER"/>
+        <parameter name="P_REQUESTER_NAME" dataType="CHARACTER"/>
+        <parameter name="P_LINE_NUM" dataType="NUMBER"/>
+    </parameters> 
+    <dataQuery>
+        <sqlStatement name="Q_MAIN">
+            <![CDATA[ 
+            SELECT 
+                PRHA.REQUISITION_HEADER_ID HEADER_ID,
+                PRHA.PREPARER_ID,
+                PAPF.EMAIL_ADDRESS,
+                PAPF.FULL_NAME,
+                PRHA.SEGMENT1,
+                PRHA.DESCRIPTION,
+                PRHA.AUTHORIZATION_STATUS AUTH_STATUS,
+                PRHA.TYPE_LOOKUP_CODE LOOKUP_CODE,
+                PRHA.ORG_ID,
+                HOU.NAME ORG_NAME,
+                PDTAV.ORG_ID
+            FROM 
+                PO_REQUISITION_HEADERS_ALL PRHA,
+                PER_ALL_PEOPLE_F PAPF,
+                HR_ORGANIZATION_UNITS HOU,
+                PO_DOCUMENT_TYPES_ALL_VL PDTAV
+            WHERE 
+                PRHA.PREPARER_ID = PAPF.PERSON_ID
+                AND PRHA.ORG_ID = HOU.ORGANIZATION_ID
+                AND PDTAV.DOCUMENT_SUBTYPE = PRHA.TYPE_LOOKUP_CODE
+                AND PRHA.ORG_ID = PDTAV.ORG_ID
+                AND PDTAV.DOCUMENT_TYPE_CODE = 'REQUISITION'
+                AND (PRHA.REQUISITION_HEADER_ID = :P_REQ_HDR_ID OR :P_REQ_HDR_ID IS NULL)
+                AND (PRHA.ORG_ID = :P_ORG_ID OR :P_ORG_ID IS NULL)
+				AND (PRHA.TYPE_LOOKUP_CODE = :P_REQ_TYPE OR :P_REQ_TYPE IS NULL)
+				AND (PAPF.FULL_NAME = :P_REQUESTER_NAME OR :P_REQUESTER_NAME IS NULL)
+            ]]>
+        </sqlStatement>
+        <sqlStatement name="Q_MAIN2">
+            <![CDATA[ 
+            SELECT 
+                PRLA.LINE_NUM, 
+                MSIB.SEGMENT1 NAME,
+                PRLA.ITEM_DESCRIPTION DESCRIPTION,
+                PRLA.ITEM_ID,
+                PRLA.ORG_ID,
+                PRLA.QUANTITY, 
+                PRLA.UNIT_PRICE,
+                PRLA.QUANTITY * PRLA.UNIT_PRICE AMOUNT,
+                GCC.SEGMENT1 || '-' || GCC.SEGMENT2 || '-' || GCC.SEGMENT3 || '-' || GCC.SEGMENT4 CHARGE_ACCOUNT
+            FROM 
+                PO_REQUISITION_LINES_ALL PRLA,
+                PO_REQ_DISTRIBUTIONS_ALL PRDA,
+                MTL_SYSTEM_ITEMS_B MSIB,
+                GL_CODE_COMBINATIONS GCC
+            WHERE 
+                PRDA.REQUISITION_LINE_ID = PRLA.REQUISITION_LINE_ID
+                AND PRDA.CODE_COMBINATION_ID = GCC.CODE_COMBINATION_ID
+                AND MSIB.INVENTORY_ITEM_ID = PRLA.ITEM_ID
+                AND (MSIB.ORGANIZATION_ID = :P_ORG_ID OR :P_ORG_ID IS NULL)
+                AND (PRLA.REQUISITION_HEADER_ID = :P_REQ_HDR_ID OR :P_REQ_HDR_ID IS NULL)
+                AND (PRLA.ORG_ID = :P_ORG_ID OR :P_ORG_ID IS NULL)
+				AND (PRLA.LINE_NUM = :P_LINE_NUM OR :P_LINE_NUM IS NULL)
+				
+            ]]>
+        </sqlStatement>
+        <sqlStatement name="Q_MAIN3">
+            <![CDATA[ 
+            SELECT fnd_profile.VALUE('ORG_ID') USR_ORG_ID
+            FROM DUAL
+            ]]>
+        </sqlStatement>
+        <sqlStatement name="Q_MAIN4">
+            <![CDATA[ 
+            SELECT fnd_profile.VALUE('USERNAME') USER_NAME
+            FROM DUAL
+            ]]>
+        </sqlStatement>
+        <sqlStatement name="Q_MAIN5">
+            <![CDATA[ 
+            SELECT fnd_profile.VALUE('RESP_NAME') RESP_NAME
+            FROM DUAL
+            ]]>
+        </sqlStatement>
+        <sqlStatement name="Q_MAIN6">
+            <![CDATA[ 
+            SELECT fnd_profile.VALUE('CONC_REQUEST_ID') REQ_ID
+            FROM DUAL
+            ]]>
+        </sqlStatement>
+        <sqlStatement name="Q_MAIN7">
+            <![CDATA[ 
+            SELECT fnd_profile.VALUE('USER_ID') USER_ID
+            FROM DUAL
+            ]]>
+        </sqlStatement>
+        <sqlStatement name="Q_MAIN8">
+            <![CDATA[ 
+            SELECT TO_CHAR(SYSDATE, 'DD-MON-RRRR') SMT_DATE
+            FROM DUAL
+            ]]>
+        </sqlStatement>
+    </dataQuery>
+
+    <dataTrigger name="beforeReportTrigger" source="xxqgen_metadata_po_depn_dk.beforereport"/>
+    
+    <dataStructure>
+        <group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+            <element name="REQ_TYPE" dataType="NUMBER" value="LOOKUP_CODE"/>
+            <element name="REQ_HEAD" dataType="NUMBER" value="P_REQ_HDR_ID"/>
+            <element name="REQNUMBER" dataType="NUMBER" value="SEGMENT1"/>
+            <element name="ORG_NAME" dataType="varchar2" value="ORG_NAME"/>
+            <element name="TYPE" dataType="varchar2" value="LOOKUP_CODE"/>
+            <element name="REQUESTER" dataType="varchar2" value="FULL_NAME"/>
+            <group name="G_MAIN2" dataType="varchar2" source="Q_MAIN2">
+                <element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+                <element name="NAME" dataType="varchar2" value="NAME"/>
+                <element name="DESCRIPTION" dataType="varchar2" value="DESCRIPTION"/>
+                <element name="ITEM" dataType="varchar2" value="ITEM"/>
+                <element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+                <element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+                <element name="AMOUNT" dataType="varchar2" value="AMOUNT"/>
+                <element name="CHARGE_ACCOUNT" dataType="varchar2" value="CHARGE_ACCOUNT"/>
+            </group>
+        </group>
+        <group name="USR_ORG" dataType="varchar2" source="Q_MAIN3">
+            <element name="USR_ORG_ID" dataType="NUMBER" value="xxqgen_metadata_po_depn_dk.gn_user_id"/>
+        </group>
+        <group name="USER_DETAILS" dataType="varchar2" source="Q_MAIN4">
+            <element name="USER_NAME" dataType="varchar2" value="xxqgen_metadata_po_depn_dk.gc_user_name"/>
+        </group>
+        <group name="RESP_DETAILS" dataType="varchar2" source="Q_MAIN5">
+            <element name="RESP_NAME" dataType="varchar2" value="RESP_NAME"/>
+        </group>
+        <group name="REQ_ID_DETAILS" dataType="varchar2" source="Q_MAIN6">
+            <element name="REQ_ID" dataType="NUMBER" value="REQ_ID"/>
+        </group>
+        <group name="DATE_INFO" dataType="varchar2" source="Q_MAIN8">
+            <element name="SMT_DATE" dataType="DATE" value="SMT_DATE"/>
+        </group>
+    </dataStructure>
+
+    <dataTrigger name="afterReportTrigger" source="xxqgen_metadata_po_depn_dk.afterreport"/>
+</dataTemplate>

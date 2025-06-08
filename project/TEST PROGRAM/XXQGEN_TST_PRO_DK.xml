@@ -1,0 +1,41 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_TST_PRO_DK" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[
+  SELECT FCPV.CONCURRENT_PROGRAM_ID,
+       FCPV.CONCURRENT_PROGRAM_NAME ,
+       FCPV.USER_CONCURRENT_PROGRAM_NAME ,
+       FEFV.EXECUTABLE_ID,
+       FEFV.EXECUTABLE_NAME ,
+       FEFV.USER_EXECUTABLE_NAME,
+       FEFV.EXECUTION_FILE_NAME,
+       FEFV.APPLICATION_NAME,
+       FCPV.OUTPUT_FILE_TYPE
+  FROM fnd_concurrent_programs_vl FCPV, fnd_executables_form_v FEFV
+  WHERE     1 = 1
+       AND FCPV.EXECUTABLE_ID = FEFV.EXECUTABLE_ID
+       AND UPPER (FCPV.concurrent_program_name) = 'XXQGEN_USR_DTL_DK'
+]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+			<element name="CONCURRENT_PROGRAM_ID" dataType="varchar2" value="CONCURRENT_PROGRAM_ID"/>
+			<element name="CONCURRENT_PROGRAM_NAME" dataType="varchar2" value="CONCURRENT_PROGRAM_NAME"/>
+			<element name="USER_CONCURRENT_PROGRAM_NAME" dataType="varchar2" value="USER_CONCURRENT_PROGRAM_NAME"/>
+			<element name="EXECUTABLE_ID" dataType="varchar2" value="EXECUTABLE_ID"/>
+			<element name="EXECUTABLE_NAME" dataType="varchar2" value="EXECUTABLE_NAME"/>
+			<element name="EXECUTION_FILE_NAME" dataType="varchar2" value="EXECUTION_FILE_NAME"/>
+			<element name="APPLICATION_NAME" dataType="varchar2" value="APPLICATION_NAME"/>
+			<element name="OUTPUT_FILE_TYPE" dataType="varchar2" value="OUTPUT_FILE_TYPE"/>
+			
+		</group>
+	</dataStructure>
+</dataTemplate>

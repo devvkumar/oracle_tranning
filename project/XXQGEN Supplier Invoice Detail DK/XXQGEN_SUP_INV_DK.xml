@@ -1,0 +1,83 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_SUP_INV_DK" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+<parameter name="P_NOTIFICATION" dataType="character"/>
+</parameters> 
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[
+select 
+ pla.line_num
+, plt.line_type
+, plla.line_location_id
+, msib.segment1 item
+, msib.description item_description
+, aps.vendor_name 
+, aps.segment1 vendor_num
+, apssa.vendor_site_code
+, hl.location_code ship_to_location_code
+, hl2.location_code bill_to_location_code
+, aia.invoice_num
+,pla.quantity
+,pla.unit_price
+,pla.unit_price*pla.quantity amount
+from po_headers_all pha
+,po_lines_all pla
+,po_distributions_all pda
+,po_line_locations_all plla
+, po_line_types plt
+,mtl_system_items_b msib
+,ap_suppliers aps 
+, ap_supplier_sites_all apssa
+,hr_locations hl
+,hr_locations hl2
+,ap_invoices_all aia
+, ap_invoice_lines_all aila
+, ap_invoice_distributions_all aida
+where 1=1
+and pha.po_header_id = pla.po_header_id
+and pla.po_line_id = pda.po_line_id
+and plla.line_location_id = pda.line_location_id
+and pla.po_line_id = plla.po_line_id
+and pla.line_type_id = plt.line_type_id
+and pla.item_id = msib.inventory_item_id(+)
+and msib.organization_id = plla.SHIP_TO_ORGANIZATION_ID
+and pha.vendor_id =aps.vendor_id
+and pha.vendor_site_id = apssa.vendor_site_id
+and aps.vendor_id = apssa.vendor_id
+and apssa.ship_to_location_id = hl.location_id(+)
+and apssa.bill_to_location_id  =hl2.location_id(+)
+ and aia.invoice_id = aila.invoice_id
+ and aila.invoice_id = aida.invoice_id
+ and aila.line_number = aida.invoice_line_number
+ and pda.po_distribution_id = aida.po_distribution_id
+ and aia.invoice_num in ('ERS-5027-2006','ERS-5070-2069','ERS-5041-2161','ERS-5103-2223')
+ ]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+		<group name="G_MAIN_1" dataType="varchar2" source="Q_MAIN">
+			<element name="INVOICE_NUM" dataType="varchar2" value="invoice_num"/>	
+			<element name="VENDOR_NAME" dataType="varchar2" value="vendor_name"/>
+			<element name="VENDOR_SITE_CODE" dataType="varchar2" value="vendor_site_code"/>
+			<element name="SHIP_TO_LOCATION_CODE" dataType="varchar2" value="ship_to_location_code"/>
+			<element name="BILL_TO_LOCATION_CODE" dataType="varchar2" value="bill_to_location_code"/>
+			<group name="G_MAIN_2" dataType="varchar2" source="Q_MAIN">
+				<element name="LINE_NUM" dataType="varchar2" value="line_num"/>
+				<element name="LINE_TYPE" dataType="varchar2" value="line_type"/>
+				<element name="ITEM" dataType="varchar2" value="item"/>
+				<element name="ITEM_DESCRIPTION" dataType="varchar2" value="item_description"/>
+				<element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+				<element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+				<element name="AMOUNT" dataType="varchar2" value="Amount"/>
+			</group>
+			<element name="TOTAL" function="sum" dataType="number" value="AMOUNT"/>
+		</group>
+		<element name="GRAND_TOTAL" function="sum" dataType="number" value="AMOUNT"/>
+		<element name="COUNT" function="count" dataType="number"   value="invoice_num"/>
+	</dataStructure>
+</dataTemplate>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dataTemplate name="XXQGEN_PO_RPT_UNION_YG" version="1.0">
+  <properties>
+    <property name="xml_tag_case" value="upper"/>
+  </properties>
+
+  <parameters>
+    <parameter name="P_ORG_ID" dataType="number"/>
+    <parameter name="P_REPORT_TYPE" dataType="varchar2"/>
+  </parameters>
+  <dataQuery>
+    <sqlStatement name="Q_MAIN1">
+      <![CDATA[
+SELECT PHA.PO_HEADER_ID
+,PLA.PO_LINE_ID
+,PLA.LINE_NUM
+,PLA.ITEM_DESCRIPTION
+,PLA.UNIT_PRICE
+,PLA.QUANTITY
+,PLA.UNIT_PRICE * PLA.QUANTITY AMOUNT
+,PDA.PO_DISTRIBUTION_ID
+FROM PO_HEADERS_ALL PHA
+,PO_LINES_ALL PLA
+,PO_DISTRIBUTIONS_ALL PDA
+,PO_LINE_LOCATIONS_ALL PLLA
+WHERE PHA.PO_HEADER_ID=PLA.PO_HEADER_ID
+AND PLA.PO_LINE_ID=PDA.PO_LINE_ID
+AND PHA.PO_HEADER_ID=PLLA.PO_HEADER_ID
+AND PHA.PO_HEADER_ID=PDA.PO_HEADER_ID
+AND PLLA.LINE_LOCATION_ID=PDA.LINE_LOCATION_ID
+AND PLLA.PO_LINE_ID=PLA.PO_LINE_ID
+AND PHA.ORG_ID=:P_ORG_ID
+AND ROWNUM<40
+ AND PDA.REQ_DISTRIBUTION_ID IS NOT NULL
+          and 1=decode(:P_REPORT_TYPE,'PO WITH REQUISITION',1,2)
+         
+                
+         UNION
+         
+SELECT PHA.PO_HEADER_ID
+,PLA.PO_LINE_ID
+,PLA.LINE_NUM
+,PLA.ITEM_DESCRIPTION
+,PLA.UNIT_PRICE
+,PLA.QUANTITY
+,PLA.UNIT_PRICE * PLA.QUANTITY AMOUNT
+,PDA.PO_DISTRIBUTION_ID
+FROM PO_HEADERS_ALL PHA
+,PO_LINES_ALL PLA
+,PO_DISTRIBUTIONS_ALL PDA
+,PO_LINE_LOCATIONS_ALL PLLA
+WHERE PHA.PO_HEADER_ID=PLA.PO_HEADER_ID
+AND PLA.PO_LINE_ID=PDA.PO_LINE_ID
+AND PHA.PO_HEADER_ID=PLLA.PO_HEADER_ID
+AND PHA.PO_HEADER_ID=PDA.PO_HEADER_ID
+AND PLLA.LINE_LOCATION_ID=PDA.LINE_LOCATION_ID
+AND PLLA.PO_LINE_ID=PLA.PO_LINE_ID
+AND PHA.ORG_ID=:P_ORG_ID
+AND ROWNUM<40
+ AND PDA.REQ_DISTRIBUTION_ID IS NULL
+          and 1=decode(:P_REPORT_TYPE,'PO WITHOUT REQUISITION',1,2)
+         AND ROWNUM < 40
+         
+      ]]>
+    </sqlStatement>
+  </dataQuery>
+  <dataStructure>
+    <group name="G_MAIN" dataType="varchar2" source="Q_MAIN1">
+        <element name="PO_HEADER_ID" dataType="varchar2" value="PO_HEADER_ID"/>
+	<element name="PO_LINE_ID" dataType="varchar2" value="PO_LINE_ID"/>
+        <element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+        <element name="ITEM_DESCRIPTION" dataType="varchar2" value="ITEM_DESCRIPTION"/>
+        <element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+        <element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+		<element name="AMOUNT" dataType="varchar2" value="AMOUNT"/>
+        <element name="PO_DISTRIBUTION_ID" dataType="varchar2" value="PO_DISTRIBUTION_ID"/>
+         </group>
+  </dataStructure>
+</dataTemplate>

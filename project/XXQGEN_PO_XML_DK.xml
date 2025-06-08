@@ -1,0 +1,56 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="xxqgen_po_xml_dk" version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+<parameter name="P_HEADER_ID" dataType="number"/>
+<parameter name="P_LINE_ID" dataType="number"/>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[ 
+SELECT 
+            PRHA.REQUISITION_HEADER_ID,
+            PRHA.PREPARER_ID,
+            PRHA.SEGMENT1,
+            PRHA.CREATION_DATE,
+            PRHA.AUTHORIZATION_STATUS,
+            PRLA.LINE_NUM,
+            PRLA.ITEM_DESCRIPTION,
+            PRLA.UNIT_PRICE,
+            PRLA.QUANTITY,
+            PRLA.UNIT_PRICE * PRLA.QUANTITY AMOUNT
+FROM 
+            PO_REQUISITION_HEADERS_ALL PRHA,
+            PO_REQUISITION_LINES_ALL PRLA
+WHERE
+            1=1
+AND      PRHA.REQUISITION_HEADER_ID = PRLA.REQUISITION_HEADER_ID
+AND      (PRHA.REQUISITION_HEADER_ID = :P_HEADER_ID OR :P_HEADER_ID IS NULL)
+AND 	 (PRLA.REQUISITION_LINE_ID = :P_LINE_ID OR :P_LINE_ID IS NULL)
+]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+			<element name="REQUISITION_HEADER_ID" dataType="varchar2" value="REQUISITION_HEADER_ID"/>
+			<element name="PREPARER_ID" dataType="varchar2" value="PREPARER_ID"/>
+			<element name="SEGMENT1" dataType="varchar2" value="SEGMENT1"/>
+			<element name="CREATION_DATE" dataType="varchar2" value="CREATION_DATE"/>--
+			<element name="AUTHORIZATION_STATUS" dataType="varchar2" value="AUTHORIZATION_STATUS"/>
+			<element name="AUTH_STATUS" dataType="varchar2" value="AUTH_STATUS"/>
+			<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+			<element name="ITEM_DESCRIPTION" dataType="varchar2" value="ITEM_DESCRIPTION"/>
+			<element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+			<element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+			<element name="AMOUNT" dataType="varchar2" value="AMOUNT"/>
+			<element name="DEST_TYPE_CODE" dataType="varchar2" value="DESTINATION_TYPE_CODE"/>
+			<element name="REQ_PERSON" dataType="varchar2" value="REQ_PERSON"/>
+			<element name="ORGAN_NAME" dataType="varchar2" value="ORGANIZATION_NAME"/>
+			<element name="LOC_DESC" dataType="varchar2" value="LOC_DESC"/>
+			
+		</group>
+	</dataStructure>
+</dataTemplate>

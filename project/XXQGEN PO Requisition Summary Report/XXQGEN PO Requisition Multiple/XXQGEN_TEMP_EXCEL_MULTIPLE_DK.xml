@@ -1,0 +1,53 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<dataTemplate name="XXQGEN_TEMP_EXCEL_MULTIPLE_DK"  version="1.0">
+<properties>
+<property name="xml_tag_case" value="upper"/>
+<property name="debug_mode" value="on" />
+</properties>
+<parameters>
+ </parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[select REQUISITION_header_id HEADER_ID
+,SEGMENT1
+,HOU.NAME ORGANIZATION_NAME
+,PRHA.AUTHORIZATION_STATUS STATUS
+from po_requisition_headers_all prha
+,HR_OPERATING_UNITS HOU
+WHERE 1=1
+AND PRHA.ORG_ID=HOU.ORGANIZATION_ID
+and PRHA.ORG_ID=204
+AND PRHA.SEGMENT1 IN('15907','1707','15904') ]]>
+</sqlStatement>
+<sqlStatement name="Q_MAIN2">
+<![CDATA[SELECT PRLA.REQUISITION_LINE_ID
+,PRLA.LINE_NUM
+,MSIB.SEGMENT1 ITEM_NAME
+,PRLA.QUANTITY
+,PRLA.UNIT_PRICE
+,PRLA.UNIT_PRICE*QUANTITY AMOUNT
+FROM po_requisition_lines_all PRLA
+,MTL_SYSTEM_ITEMS_B MSIB
+ WHERE 1=1
+AND PRLA.ITEM_ID=MSIB.INVENTORY_ITEM_ID
+AND PRLA.DESTINATION_ORGANIZATION_ID=MSIB.ORGANIZATION_ID
+ AND REQUISITION_header_id IN (:HEADER_ID) ]]>
+</sqlStatement>
+</dataQuery>
+<dataStructure>
+<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+	<element name="REQ_NUMBER" dataType="NUMBER" value="SEGMENT1"/>
+	<element name="HEADER_ID" dataType="varchar2" value="HEADER_ID"/>
+	<element name="ORGANIZATION_NAME" dataType="varchar2" value="ORGANIZATION_NAME"/>
+	<element name="AUTHORIZATION_STATUS" dataType="varchar2" value="AUTHORIZATION_STATUS"/>
+	<group name="G_MAIN2" dataType="varchar2" source="Q_MAIN2">
+		<element name="REQUISITION_LINE_ID" dataType="varchar2" value="REQUISITION_LINE_ID"/>
+		<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+		<element name="ITEM_NAME" dataType="varchar2" value="ITEM_NAME"/>
+		<element name="QUANTITY" dataType="varchar2" value="QUANTITY"/>
+		<element name="UNIT_PRICE" dataType="varchar2" value="UNIT_PRICE"/>
+		<element name="AMOUNT" dataType="varchar2" value="AMOUNT"/>
+	</group>	
+	</group>
+	</dataStructure>
+</dataTemplate>

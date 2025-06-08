@@ -1,0 +1,75 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<dataTemplate name="XXQGEN_PO_REQ_BULK_COLL_DK" 
+      defaultPackage="XXQGEN_PO_REQ_BULK_COLL_DK" version="1.0">
+<properties>
+<property name="xml_tag_case" value="upper"/>
+</properties>
+
+<parameters>
+<parameter name="P_ORG_ID" dataType="charecter">
+<parameter name="P_REQ_TYPE" dataType="character"/>
+<parameter name="P_REQUESTER_NAME" dataType="character"/>
+<parameter name="P_LINE_NUM" dataType="charecter">
+<parameter name="P_REQ_HDR_ID" dataType="charecter">
+ </parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[ 
+	SELECT HEADER_ID,
+		  PREPARER_ID,
+		  EMAIL_ADDRESS,
+		  FULL_NAME,
+		  SEGMENT1,
+		  DESCRIPTION,
+		  AUTH_STATUS,
+		  LOOKUP_CODE,
+		  ORG_ID,
+		  ORG_NAME,
+		  LINE_NUM,
+		  ITEM_NAME,
+		  ITEM_DESCRIPTION,
+		  ITEM_ID,
+		  QUANTITY,
+		  UNIT_PRICE,
+		  AMOUNT,
+		  CHARGE_ACCOUNT,
+		  CREATED_BY,
+		  CREATED_DATE,
+		  UPDATED_BY,
+		  UPDATED_DATE,
+		  REQUEST_ID
+	FROM XXQGEN_PO_REQ_DK
+]]>
+</sqlStatement>
+</dataQuery>
+<dataTrigger name="afterReportTrigger" source="XXQGEN_PO_REQ_BULK_COLL_DK.afterreport"/>
+<dataTrigger name="beforeReportTrigger" source="XXQGEN_PO_REQ_BULK_COLL_DK.beforereport"/>
+<element name="P_REQ_HDR_ID1" dataType="number" value="XXQGEN_PO_REQ_BULK_COLL_DK.P_REQ_HDR_ID"/>
+<element name="P_ORG_ID1" dataType="number" value="XXQGEN_PO_REQ_BULK_COLL_DK.P_ORG_ID"/>
+<dataStructure>
+
+<element name="USER_NAME" dataType="number" value="XXQGEN_PO_REQ_BULK_COLL_DK.gc_user_name"/>
+<element name="REQUEST_ID" dataType="number" value="XXQGEN_PO_REQ_BULK_COLL_DK.gn_request_id"/>
+<element name="SUBMITION_DATE" dataType="number" value="XXQGEN_PO_REQ_BULK_COLL_DK.gd_date"/>
+<element name="RESP_NAME" dataType="number" value="XXQGEN_PO_REQ_BULK_COLL_DK.gc_resp_name"/>
+
+
+
+<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+	<element name="REQNUMBER" dataType="NUMBER" value="SEGMENT1"/>
+	<element name="ORG_ID" dataType="varchar2" value="ORG_ID"/>
+	<element name="name" dataType="varchar2" value="name"/>
+	<element name="preparer" dataType="varchar2" value="preparer"/>
+	<element name="req_hdr_id" dataType="varchar2" value="req_hdr_id"/>
+	<element name="AUTHORIZATION_STATUS" dataType="varchar2" value="AUTHORIZATION_STATUS"/>
+	<element name="requisition_LINE_id" dataType="varchar2" value="requisition_LINE_id"/>
+	<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+	<element name="category" dataType="varchar2" value="category"/>
+	<element name="ITEM" dataType="varchar2" value="item"/>
+	<element name="quantity" dataType="varchar2" value="quantity"/>
+	<element name="unit_price" dataType="varchar2" value="unit_price"/>
+	<element name="amount" dataType="varchar2" value="amount"/>
+	<element name="CHARGE_ACCOUNT" dataType="varchar2" value="CHARGE_ACCOUNT"/>
+</group>
+</dataStructure>
+</dataTemplate>

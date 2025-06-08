@@ -1,0 +1,140 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+
+<dataTemplate name="XXQGEN_INVOICE_REPT_AR"  version="1.0">
+<properties>
+	<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+<parameter name="P_TRADING_PARTNER" dataType="number"/>
+<parameter name="P_BASE_CURRENCY_CODE" dataType="character"/>
+<parameter name="P_START_CREATION_DATE" dataType="DATE"/>
+<parameter name="P_END_CREATION_DATE" dataType="DATE"/>
+</parameters> 
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[
+SELECT INV1.VENDOR_ID C_VENDOR_ID,
+       HP.PARTY_NAME C_DETAIL_VENDOR_NAME,
+       INV1.INVOICE_DATE C_INVOICE_DATE,
+       B.BATCH_NAME C_BATCH_NAME,
+       INV1.INVOICE_ID C_INVOICE_ID,
+       INV1.INVOICE_NUM C_INVOICE_NUM,
+       (SELECT DISTINCT POH.SEGMENT1 C_PO_NUMBER
+                   FROM PO_HEADERS POH,
+                        PO_DISTRIBUTIONS_ALL PDA,
+                        AP_INVOICE_DISTRIBUTIONS_ALL AIDA
+                  WHERE 1 = 1
+                    AND POH.PO_HEADER_ID = PDA.PO_HEADER_ID
+                    AND PDA.PO_DISTRIBUTION_ID = AIDA.PO_DISTRIBUTION_ID
+                    AND AIDA.INVOICE_ID = INV1.INVOICE_ID) PO_NUMBER,
+       NVL( DECODE (INV1.INVOICE_CURRENCY_CODE,
+               :P_BASE_CURRENCY_CODE, INV1.INVOICE_AMOUNT,
+               INV1.BASE_AMOUNT
+              ) ,0)C_ORIGINAL_AMOUNT3,
+         DECODE (INV1.INVOICE_CURRENCY_CODE,
+                 :P_BASE_CURRENCY_CODE, INV1.INVOICE_AMOUNT,
+                 INV1.BASE_AMOUNT
+                )
+       - DECODE (INV1.PAYMENT_CURRENCY_CODE,
+                 :P_BASE_CURRENCY_CODE, NVL (INV1.AMOUNT_PAID, 0)
+                  + NVL (DISCOUNT_AMOUNT_TAKEN, 0),
+                   DECODE (F.MINIMUM_ACCOUNTABLE_UNIT,
+                           NULL, ROUND
+                                    ((  (DECODE (INV1.PAYMENT_CROSS_RATE_TYPE,
+                                                 'EMU FIXED', 1
+                                                  / INV1.PAYMENT_CROSS_RATE,
+                                                 INV1.EXCHANGE_RATE
+                                                )
+                                        )
+                                      * NVL (INV1.AMOUNT_PAID, 0)
+                                     ),
+                                     F.PRECISION
+                                    ),
+                             ROUND (  (  (DECODE
+                                                (INV1.PAYMENT_CROSS_RATE_TYPE,
+                                                 'EMU FIXED', 1
+                                                  / INV1.PAYMENT_CROSS_RATE,
+                                                 INV1.EXCHANGE_RATE
+                                                )
+                                         )
+                                       * NVL (INV1.AMOUNT_PAID, 0)
+                                      )
+                                    / F.MINIMUM_ACCOUNTABLE_UNIT
+                                   )
+                           * F.MINIMUM_ACCOUNTABLE_UNIT
+                          )
+                 + DECODE (F.MINIMUM_ACCOUNTABLE_UNIT,
+                           NULL, ROUND
+                                    ((  (DECODE (INV1.PAYMENT_CROSS_RATE_TYPE,
+                                                 'EMU FIXED', 1
+                                                  / INV1.PAYMENT_CROSS_RATE,
+                                                 INV1.EXCHANGE_RATE
+                                                )
+                                        )
+                                      * NVL (INV1.DISCOUNT_AMOUNT_TAKEN, 0)
+                                     ),
+                                     F.PRECISION
+                                    ),
+                             ROUND (  (  (DECODE
+                                                (INV1.PAYMENT_CROSS_RATE_TYPE,
+                                                 'EMU FIXED', 1
+                                                  / INV1.PAYMENT_CROSS_RATE,
+                                                 INV1.EXCHANGE_RATE
+                                                )
+                                         )
+                                       * NVL (INV1.DISCOUNT_AMOUNT_TAKEN, 0)
+                                      )
+                                    / F.MINIMUM_ACCOUNTABLE_UNIT
+                                   )
+                           * F.MINIMUM_ACCOUNTABLE_UNIT
+                          )
+                ) C_AMOUNT_REMAINING3,
+       INV1.DESCRIPTION C_DESCRIPTION,
+       APPS.AP_INVOICES_PKG.GET_APPROVAL_STATUS
+                               (INV1.INVOICE_ID,
+                                INV1.INVOICE_AMOUNT,
+                                INV1.PAYMENT_STATUS_FLAG,
+                                INV1.INVOICE_TYPE_LOOKUP_CODE
+                               ) APPROVAL_STATUS,
+       AIAHA.LAST_UPDATE_DATE DUE_DATE, APT.NAME PAYMENT_TERM,
+       AIAHA.RESPONSE NOTES
+  FROM HZ_PARTIES HP,
+       AP_INVOICES INV1,
+       AP_BATCHES_ALL B,
+       AP_PAYMENT_SCHEDULES S,
+       AP_TERMS APT,
+       AP_INV_APRVL_HIST_ALL AIAHA,
+       FND_CURRENCIES_VL F
+ WHERE 1 = 1
+   AND HP.PARTY_ID = INV1.PARTY_ID
+   AND B.BATCH_ID(+) = INV1.BATCH_ID
+   AND S.INVOICE_ID(+) = INV1.INVOICE_ID
+   AND APT.TERM_ID = INV1.TERMS_ID
+   AND AIAHA.INVOICE_ID(+) = INV1.INVOICE_ID
+   AND INV1.INVOICE_CURRENCY_CODE = F.CURRENCY_CODE
+   AND (HP.PARTY_ID = :P_TRADING_PARTNER OR :P_TRADING_PARTNER IS NULL)
+   AND (F.CURRENCY_CODE = :P_BASE_CURRENCY_CODE OR :P_BASE_CURRENCY_CODE IS NULL )
+   AND TO_CHAR(INV1.CREATION_DATE,'DD/MM/RRRR') >= NVL(TO_CHAR(:P_START_CREATION_DATE,'DD/MM/RRRR'),TO_CHAR(INV1.CREATION_DATE,'DD/MM/RRRR'))          
+   AND TO_CHAR(INV1.CREATION_DATE,'DD/MM/RRRR') <= NVL(TO_CHAR(:P_END_CREATION_DATE,'DD/MM/RRRR'),TO_CHAR(INV1.CREATION_DATE,'DD/MM/RRRR'))
+				 ]]>
+</sqlStatement>
+</dataQuery>
+	<dataStructure>
+			<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">	
+			<element name="C_VENDOR_ID2" dataType="NUMBER" value="c_vendor_id"/>
+			<element name="C_BATCH_NAME2" dataType="varchar2" value="c_batch_name"/>
+			<element name="TRADING_PARTNER2" dataType="varchar2" value="c_detail_vendor_name"/>
+			<element name="C_INVOICE_ID2" dataType="NUMBER" value="c_invoice_id"/>
+			<element name="C_INVOICE_NUM2" dataType="varchar2" value="c_invoice_num"/>
+			<element name="PO_NUMBER2" dataType="varchar2" value="po_number"/>
+			<element name="C_INVOICE_DATE2" dataType="varchar2" value="c_invoice_date"/>
+			<element name="APPROVAL_STATUS2" dataType="varchar2" value="approval_status"/>
+			<element name="APPROVER2" dataType="varchar2" value="approver"/>
+			<element name="DUE_DATE2" dataType="varchar2" value="due_date"/>
+			<element name="PAYMENT_TERM2" dataType="varchar2" value="payment_term"/>
+			<element name="NOTES2" dataType="varchar2" value="notes"/>
+			<element name="C_ORIGINAL_AMOUNT4" dataType="number" value="c_original_amount3"/>
+			<element name="C_AMOUNT_REMAINING4" dataType="number" value="c_amount_remaining3"/>
+		</group>
+	</dataStructure>
+</dataTemplate>

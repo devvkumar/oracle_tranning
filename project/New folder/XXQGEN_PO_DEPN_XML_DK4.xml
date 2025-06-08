@@ -1,0 +1,138 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<dataTemplate name="XXQGEN_REQ_GRP_PAR_RPT_AD" 
+      defaultPackage="XXQGEN_REQ_GRP_PAR_RPT_AD" version="1.0">
+<properties>
+<property name="xml_tag_case" value="upper"/>
+</properties>
+<parameters>
+<parameter name="P_REQ_HDR_ID" dataType="character"/>
+<parameter name="P_ORG_ID" dataType="character"/>
+ </parameters>
+<dataQuery>
+<sqlStatement name="Q_MAIN">
+<![CDATA[ 
+select prha.segment1
+,prha.requisition_header_id req_hdr_id
+, HOU.name 
+, ood.organization_name
+, prha.type_lookup_code type_code
+, pdtav.type_name 
+, papf.full_name preparer
+, prha.authorization_status
+, prha.org_id
+, PLC.displayed_field status
+, prha.description
+, fu1.user_id creation_id
+, fu1.user_name created_by
+, fu2.user_id last_updation_id
+, fu2.user_name updated_by
+from PO_REQUISITION_HEADERS_ALL PRHA
+, HR_OPERATING_UNITs HOU
+, org_organization_definitions ood
+, per_all_people_f PAPF
+, fnd_user FU1
+, fnd_user FU2
+, po_lookup_codes plc
+, po_document_types_all_vl PDTAV
+where 1=1 
+and rownum<10
+and  prha.org_id = hou.organization_id
+and  prha.org_id = ood.organization_id
+and prha.preparer_id = papf.person_id
+and prha.last_updated_by = FU1.user_id
+and prha.created_by = fu2.user_id
+and prha.authorization_status = plc.lookup_code 
+and prha.type_lookup_code = pdtav.document_subtype
+and prha.org_id = pdtav.org_id
+and PLC.LOOKUP_TYPE = 'AUTHORIZATION STATUS'
+and PDTAV.DOCUMENT_TYPE_code = 'REQUISITION'
+AND (prha.requisition_header_id=:P_req_hdr_id  or :P_req_hdr_id is null)
+AND(prha.org_id=:P_ORG_ID or :P_ORG_ID is null)]]>
+</sqlStatement>
+<sqlStatement name="Q_MAIN2">
+<![CDATA[ select prla.requisition_LINE_id
+, prla.line_type_id
+, PRLA.LINE_NUM
+, mc.segment1||'.'||mc.segment2 category
+, prla.unit_price
+, prla.quantity
+, prla.unit_price * prla.quantity amount
+, prla.unit_meas_lookup_code
+, ood.organization_id
+, ood.organization_code
+, ood.organization_name
+, prla.need_by_date
+, prla.to_person_id
+, papf.full_name
+, prla.deliver_to_location_id
+, hl.location_code
+, hl.description
+, hl.ship_to_location_id
+, hl.inventory_organization_id
+, plt.line_type
+, msi.segment1 item
+, msi.description
+, gcc.segment1
+    || '-'
+    || gcc.segment2
+    || '-'
+    || gcc.segment3
+    || '-'
+    || gcc.segment4 CHARGE_ACCOUNT
+from po_requisition_lines_all prla
+, mtl_system_items_b msi
+, org_organization_definitions ood
+, mtl_categories mc
+, per_all_people_f papf
+, hr_locations hl
+, po_line_types PLT
+, PO_REQ_DISTRIBUTIONS_ALL prda
+,gl_code_combinations gcc
+where 1=1
+ and rownum<10
+and prla.DESTINATION_ORGANIZATION_ID = ood.organization_id
+and prla.DESTINATION_ORGANIZATION_ID= msi.organization_id
+and prla.item_id = msi.inventory_item_id
+and mc.category_id = prla.category_id
+and prla.to_person_id = papf.person_id
+and prla.deliver_to_location_id = hl.location_id
+and prla.line_type_id = plt.line_type_id
+and prla.requisition_LINE_id = prda.requisition_LINE_id
+and prda.code_combination_id = gcc.code_combination_id
+and prla.requisition_header_id=:P_req_hdr_id
+AND prla.org_id=:P_ORG_ID
+ ]]>
+</sqlStatement>
+</dataQuery>
+<dataTrigger name="afterReportTrigger" 
+             source="XXQGEN_REQ_GRP_PAR_RPT_AD.afterreport"/>
+<dataTrigger name="beforeReportTrigger" 
+   source="XXQGEN_REQ_GRP_PAR_RPT_AD.beforereport"/>
+
+<element name="P_REQ_HDR_ID1" dataType="number" 
+value="XXQGEN_REQ_GRP_PAR_RPT_AD.P_REQ_HDR_ID"/>
+<element name="P_ORG_ID1" dataType="number"
+ value="XXQGEN_REQ_GRP_PAR_RPT_AD.P_ORG_ID"/>
+<dataStructure>
+
+<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+	<element name="REQNUMBER" dataType="NUMBER" 
+	value="SEGMENT1"/>
+	<element name="ORG_ID" dataType="varchar2" value="ORG_ID"/>
+	<element name="name" dataType="varchar2" value="name"/>
+	<element name="preparer" dataType="varchar2" value="preparer"/>
+	<element name="req_hdr_id" dataType="varchar2" value="req_hdr_id"/>
+	<element name="AUTHORIZATION_STATUS" dataType="varchar2" value="AUTHORIZATION_STATUS"/>
+	<group name="G_MAIN2" dataType="varchar2" source="Q_MAIN2">
+		<element name="requisition_LINE_id" dataType="varchar2" value="requisition_LINE_id"/>
+		<element name="LINE_NUM" dataType="varchar2" value="LINE_NUM"/>
+		<element name="category" dataType="varchar2" value="category"/>
+		<element name="ITEM" dataType="varchar2" value="item"/>
+		<element name="quantity" dataType="varchar2" value="quantity"/>
+		<element name="unit_price" dataType="varchar2" value="unit_price"/>
+		<element name="amount" dataType="varchar2" value="amount"/>
+		<element name="CHARGE_ACCOUNT" dataType="varchar2" value="CHARGE_ACCOUNT"/>
+	</group>
+</group>
+</dataStructure>
+</dataTemplate>

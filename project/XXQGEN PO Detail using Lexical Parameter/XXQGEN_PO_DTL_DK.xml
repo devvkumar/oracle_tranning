@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataTemplate name="XXQGEN_PO_DTL_DK"  defaultPackage="XXQGEN_PO_DTL_ON_REQ_PKG_DK" version="1.0" >
+  <properties>
+    <property name="xml_tag_case" value="upper"/>
+    <property name="debug_mode" value="on" />
+  </properties>
+  <parameters>
+    <parameter name="P_ORG_ID" dataType="character"/>
+    <parameter name="P_REQ_TYPE" dataType="character"/>
+  </parameters>
+    
+  <dataQuery>
+    <sqlStatement name="Q_MAIN">
+      <![CDATA[
+        SELECT PHA.SEGMENT1 PO_NUMBER
+             , PHA.PO_HEADER_ID HDR_ID
+             , PLA.LINE_NUM
+             , PLA.UNIT_PRICE 
+             , PLA.QUANTITY
+             , PLA.UNIT_PRICE * PLA.QUANTITY AMOUNT
+        FROM
+             PO_HEADERS_ALL PHA
+            , PO_LINES_ALL PLA
+            , PO_DISTRIBUTIONS_ALL PDA
+        WHERE 1=1
+            AND PHA.PO_HEADER_ID = PLA.PO_HEADER_ID
+            AND PLA.PO_LINE_ID = PDA.PO_LINE_ID
+            &LP_QUERY 
+			AND ROWNUM < 20
+			
+			
+      ]]>
+    </sqlStatement>
+  </dataQuery>
+      <dataTrigger name="beforeReportTrigger" source="XXQGEN_PO_DTL_ON_REQ_PKG_DK.beforereport"/>
+    <dataTrigger name="afterReportTrigger" source="XXQGEN_PO_DTL_ON_REQ_PKG_DK.afterreport"/>
+  <dataStructure>
+    <element name="P_ORG_ID1" dataType="CHARACTER" value="XXQGEN_PO_DTL_ON_REQ_PKG_DK.P_ORG_ID"/>	
+    <element name="LP_QUERY1" dataType="CHARACTER" value="XXQGEN_PO_DTL_ON_REQ_PKG_DK.LP_QUERY"/> 
+    <element name="P_REQ_TYPE1" dataType="CHARACTER" value="XXQGEN_PO_DTL_ON_REQ_PKG_DK.P_REQ_TYPE"/>	
+    <element name="PROG_NAME" dataType="CHARACTER" value="XXQGEN_PO_DTL_ON_REQ_PKG_DK.GC_F_NAME"/>	
+
+    <group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+      <element name="PO_NUMBER" dataType="NUMBER" value="PO_NUMBER"/>
+      <element name="HDR_ID" dataType="NUMBER" value="HDR_ID"/>
+      <element name="LINE_NUM" dataType="NUMBER" value="LINE_NUM"/>
+      <element name="UNIT_PRICE" dataType="NUMBER" value="UNIT_PRICE"/>
+      <element name="AMOUNT" dataType="NUMBER" value="AMOUNT"/>
+    </group>
+  </dataStructure>
+</dataTemplate>

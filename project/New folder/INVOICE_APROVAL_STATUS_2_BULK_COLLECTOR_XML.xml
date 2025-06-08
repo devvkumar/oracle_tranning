@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataTemplate name="XXQGEN_INV_APPROV_DK" 
+      defaultPackage="" version="1.0">
+	<properties>
+		<property name="xml_tag_case" value="upper"/>
+	</properties>
+	<parameters>
+		<parameter name="P_TRADING_PATNER" dataType="character"/> <!-- Fixed here -->
+		<parameter name="P_START_CREATION_DATE" dataType="DATE"/>
+		<parameter name="P_END_CREATION_DATE" dataType="DATE"/>
+	</parameters>
+	<dataQuery>
+		<sqlStatement name="Q_MAIN">
+			<![CDATA[
+			SELECT 	VENDOR_ID, 
+					TRADING_PARTNER, 
+					INVOICE_DATE, 
+					BATCH_NAME, 
+					INVOICE_ID, 
+					INVOICE_NUM, 
+					PO_NUMBER, 
+					ORIGINAL_AMOUNT, 
+					AMOUNT_REMAINING, 
+					DESCRIPTION, 
+					APPROVAL_STATUS, 
+					DUE_DATE, 
+					payment_term, 
+					NOTES, 
+					APPROVER_NAME
+			FROM XXQGEN_PO_APPROV_STATUS_DK
+			]]>
+		</sqlStatement>
+	</dataQuery>
+	<dataTrigger name="afterReportTrigger" 
+                 source="XXQGEN_INV_APP_PARA_DK.afterreport"/>
+    <dataTrigger name="beforeReportTrigger" 
+                 source="XXQGEN_INV_APP_PARA_DK.beforereport"/>
+	<dataStructure>
+		<group name="G_MAIN" dataType="varchar2" source="Q_MAIN">
+			<element name="BATCH_NAME" dataType="VARCHAR2" value="BATCH_NAME"/>
+			<element name="TRADING_PARTNER" dataType="VARCHAR2" value="TRADING_PARTNER"/>
+			<element name="INVOICE_NUM" dataType="VARCHAR2" value="INVOICE_NUM"/>
+			<element name="PO_NUMBER" dataType="VARCHAR2" value="PO_NUMBER"/>
+			<element name="INV_DATE" dataType="DATE" value="INVOICE_DATE"/>
+			<element name="ORG_AMOUNT" dataType="NUMBER" value="ORIGINAL_AMOUNT"/>
+			<element name="AMOUNT_REMAIN" dataType="NUMBER" value="AMOUNT_REMAINING"/>
+			<element name="APPROVAL_STATUS" dataType="VARCHAR2" value="APPROVAL_STATUS"/>
+			<element name="APPROVER_NAME" dataType="VARCHAR2" value="APPROVER_NAME"/>
+			<element name="DUE_DATE" dataType="DATE" value="DUE_DATE"/>
+			<element name="PAYMENT_TERM" dataType="VARCHAR2" value="PAYMENT_TERM"/>
+			<element name="NOTES" dataType="VARCHAR2" value="NOTES"/>
+		</group>
+	</dataStructure>
+</dataTemplate>
