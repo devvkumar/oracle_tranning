@@ -1,4 +1,4 @@
-create or replace directory dir_test as '/dir_test/';
+create or replace directory DIR_TEST as '/dir_test/';
 
 drop table EMPLOYEES_EXT_DK;
 
@@ -13,7 +13,7 @@ CREATE TABLE employees_ext_dk
    ) 
    ORGANIZATION EXTERNAL 
     ( TYPE ORACLE_LOADER
-      DEFAULT DIRECTORY DIR_AD
+      DEFAULT DIRECTORY DIR_TEST
       ACCESS PARAMETERS
       ( FIELDS TERMINATED BY ',')
       LOCATION
